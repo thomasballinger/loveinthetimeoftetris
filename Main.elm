@@ -5,13 +5,12 @@ import Html exposing (div, button, text, br, node)
 import Html.App exposing (beginnerProgram)
 import Html.Events exposing (onClick)
 import Array
-import Collage exposing (collage, toForm)
-import Element exposing (show)
-import Text
+import StoryView exposing (storyView)
+import StoryView exposing (Directional(..))
 
 
 main =
-    beginnerProgram { model = exampleBoard, view = view, update = update }
+    beginnerProgram { model = initialWorld, view = view, update = update }
 
 
 view model =
@@ -19,8 +18,8 @@ view model =
         [ css "http://localhost:8080/style.css"
         , js "http://localhost:8080/script.js"
         , button [ onClick Decrement ] [ text "-" ]
-        , tetrisView model
-        , storyView { a = 1 }
+        , tetrisView model.tetris
+        , storyView model
         , button [ onClick Increment ] [ text "+" ]
         ]
 
@@ -31,10 +30,6 @@ css path =
 
 js path =
     node "script" [ src path ] []
-
-
-storyView world =
-    Element.toHtml (collage 200 200 [ Collage.text (Text.fromString (toString world)) ])
 
 
 tetrisView tetris =
@@ -84,6 +79,10 @@ initialBoard =
     Array.initialize (width * height) (\x -> 0)
 
 
+initialWorld =
+    { tetris = exampleBoard, player = { x = 10, y = 10, dir = Left, dx = 0, dy = 0 } }
+
+
 exampleBoard =
     initialBoard
         |> gridSet 1 2 1
@@ -115,9 +114,4 @@ type Msg
 
 
 update msg model =
-    case msg of
-        Increment ->
-            gridSet 2 3 ((gridGet 2 3 model) + 1) model
-
-        Decrement ->
-            gridSet 2 3 -10 model
+    model
