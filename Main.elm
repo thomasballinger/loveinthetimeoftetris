@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Html.Attributes exposing (..)
-import Html exposing (div, button, text, br)
+import Html exposing (div, button, text, br, node)
 import Html.App exposing (beginnerProgram)
 import Html.Events exposing (onClick)
 import Array
@@ -13,10 +13,15 @@ main =
 
 view model =
     div []
-        [ button [ onClick Decrement ] [ text "-" ]
+        [ css "http://localhost:8080/style.css"
+        , button [ onClick Decrement ] [ text "-" ]
         , div [ class "board" ] (divGrid model)
         , button [ onClick Increment ] [ text "+" ]
         ]
+
+
+css path =
+    node "link" [ rel "stylesheet", href path ] []
 
 
 divGrid grid =

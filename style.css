@@ -1,0 +1,11 @@
+
+div.board div {
+  width: 20px;
+  height: 20px;
+}
+div.block {
+  background-color: #333;
+}
+div.space {
+  background-color: #fff;
+}
