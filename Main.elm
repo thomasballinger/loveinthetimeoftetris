@@ -8,7 +8,7 @@ import Array
 
 
 main =
-    beginnerProgram { model = initialBoard, view = view, update = update }
+    beginnerProgram { model = exampleBoard, view = view, update = update }
 
 
 view model =
@@ -65,6 +65,14 @@ height =
 
 initialBoard =
     Array.initialize (width * height) (\x -> 0)
+
+
+exampleBoard =
+    initialBoard
+        |> gridSet 1 2 1
+        |> gridSet 1 3 1
+        |> gridSet 1 4 1
+        |> gridSet 2 4 1
 
 
 

@@ -1,7 +1,13 @@
 
 div.board div {
+}
+div.board-row div {
   width: 20px;
   height: 20px;
+  float: left;
+}
+div.board-row {
+  clear: left;
 }
 div.block {
   background-color: #333;
