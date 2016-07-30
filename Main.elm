@@ -5,6 +5,9 @@ import Html exposing (div, button, text, br, node)
 import Html.App exposing (beginnerProgram)
 import Html.Events exposing (onClick)
 import Array
+import Collage exposing (collage, toForm)
+import Element exposing (show)
+import Text
 
 
 main =
@@ -14,14 +17,28 @@ main =
 view model =
     div []
         [ css "http://localhost:8080/style.css"
+        , js "http://localhost:8080/script.js"
         , button [ onClick Decrement ] [ text "-" ]
-        , div [ class "board" ] (divGrid model)
+        , tetrisView model
+        , storyView { a = 1 }
         , button [ onClick Increment ] [ text "+" ]
         ]
 
 
 css path =
     node "link" [ rel "stylesheet", href path ] []
+
+
+js path =
+    node "script" [ src path ] []
+
+
+storyView world =
+    Element.toHtml (collage 200 200 [ Collage.text (Text.fromString (toString world)) ])
+
+
+tetrisView tetris =
+    div [ class "board" ] (divGrid tetris)
 
 
 divGrid grid =
