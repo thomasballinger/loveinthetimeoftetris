@@ -4,7 +4,7 @@ import Collage exposing (collage, toForm, rect, filled, move, scale)
 import Element exposing (show, Element, image)
 import Text
 import Color exposing (rgb)
-import Tetris exposing (onSpots)
+import Tetris exposing (onSpots, boardCols, boardRows)
 
 
 storyView world =
@@ -12,9 +12,10 @@ storyView world =
         (collage 400
             400
             ([ -- Collage.text (Text.fromString (toString world)),
-               playerDisplay ( world.sf, 0, 0 ) world.player
+               playerDisplay ( world.sf, world.player.x, world.player.y ) world.player
              ]
-                ++ (Debug.log "things" (List.map (rectForm ( world.sf, world.player.x, world.player.y )) (blocks world.tetris)))
+                ++ (List.map (rectForm ( world.sf, world.player.x, world.player.y )) (blocks world.tetris))
+                ++ (List.map (rectForm ( world.sf, world.player.x, world.player.y )) walls)
             )
         )
 
@@ -44,10 +45,24 @@ blocks tetris =
         (onSpots tetris)
 
 
+walls =
+    [ { width = toFloat (100 * (boardCols + 2))
+      , height = 100
+      , x = (boardCols / 2) * 100
+      , y = -50
+      }
+    , { width = toFloat (100 * (boardCols + 2))
+      , height = 100
+      , x = (boardCols / 2) * 100
+      , y = (boardRows) * 100 + 50
+      }
+    ]
+
+
 rectForm ( sf, cx, cy ) entityRect =
     rect (entityRect.width * sf) (entityRect.height * sf)
         |> filled (rgb 10 30 50)
-        |> move ( (entityRect.x * sf) - cx, (entityRect.y * sf) - cy )
+        |> move ( (entityRect.x - cx) * sf, (entityRect.y - cy) * sf )
 
 
 

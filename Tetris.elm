@@ -1,4 +1,4 @@
-module Tetris exposing (divGrid, exampleBoard, onSpots)
+module Tetris exposing (divGrid, exampleBoard, onSpots, boardRows, boardCols)
 
 import Html.Attributes exposing (class)
 import Html exposing (div)
@@ -29,30 +29,30 @@ divRow row =
 
 
 rows grid =
-    List.map (\i -> Array.toList (Array.slice (i * boardWidth) ((i + 1) * boardWidth) grid))
-        (range boardHeight)
+    List.map (\i -> Array.toList (Array.slice (i * boardCols) ((i + 1) * boardCols) grid))
+        (range boardRows)
 
 
-boardWidth =
+boardCols =
     10
 
 
-boardHeight =
+boardRows =
     22
 
 
 onSpots grid =
     Array.toIndexedList grid
         |> List.filter (\( i, x ) -> x > 0)
-        |> List.map (\( i, x ) -> ( i % boardWidth, i // boardWidth ))
+        |> List.map (\( i, x ) -> ( i % boardCols, i // boardCols ))
 
 
 initialBoard =
-    Array.initialize (boardWidth * boardHeight) (\x -> 0)
+    Array.initialize (boardCols * boardRows) (\x -> 0)
 
 
 gridGet x y g =
-    case Array.get (y * boardWidth + x) g of
+    case Array.get (y * boardCols + x) g of
         Just x ->
             x
 
@@ -61,7 +61,7 @@ gridGet x y g =
 
 
 gridSet x y v grid =
-    Array.set (y * boardWidth + x) v grid
+    Array.set (y * boardCols + x) v grid
 
 
 exampleBoard =
