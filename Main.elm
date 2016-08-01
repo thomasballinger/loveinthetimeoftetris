@@ -1,12 +1,13 @@
 module Main exposing (..)
 
-import Html.Attributes exposing (..)
+import Html.Attributes exposing (class, rel, src, href)
 import Html exposing (div, button, text, br, node)
 import Html.App as App
 import Html.Events exposing (onClick)
 import Char
 import StoryView exposing (storyView)
 import StoryView exposing (Directional(..))
+import Entity exposing (gravity, step)
 import Tetris exposing (divGrid, exampleBoard)
 import Keyboard
 
@@ -61,10 +62,10 @@ type Msg
     | KeyMsg Keyboard.KeyCode
 
 
-keypressedPlayer player code =
+keypressedPlayer code player =
     case Char.fromCode code of
         'w' ->
-            { player | dy = player.dy + 1 }
+            { player | dy = player.dy + 10 }
 
         'a' ->
             { player | dir = Left, x = player.x - 10 }
@@ -87,6 +88,12 @@ update msg model =
                     { model | sf = model.sf * 0.8 }
 
                 KeyMsg code ->
-                    { model | player = keypressedPlayer model.player code }
+                    { model
+                        | player =
+                            model.player
+                                |> keypressedPlayer code
+                                |> step 1
+                                |> gravity 1
+                    }
     in
         ( newModel, Cmd.none )
