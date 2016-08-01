@@ -2,15 +2,26 @@ module Main exposing (..)
 
 import Html.Attributes exposing (..)
 import Html exposing (div, button, text, br, node)
-import Html.App exposing (beginnerProgram)
+import Html.App as App
 import Html.Events exposing (onClick)
+import Char
 import StoryView exposing (storyView)
 import StoryView exposing (Directional(..))
 import Tetris exposing (divGrid, exampleBoard)
+import Keyboard
 
 
 main =
-    beginnerProgram { model = initialWorld, view = view, update = update }
+    App.program
+        { init = ( initialWorld, Cmd.none )
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
+
+
+subscriptions model =
+    Keyboard.presses KeyMsg
 
 
 view model =
@@ -47,12 +58,35 @@ initialWorld =
 type Msg
     = Increment
     | Decrement
+    | KeyMsg Keyboard.KeyCode
+
+
+keypressedPlayer player code =
+    case Char.fromCode code of
+        'w' ->
+            { player | dy = player.dy + 1 }
+
+        'a' ->
+            { player | dir = Left, x = player.x - 10 }
+
+        'd' ->
+            { player | dir = Right, x = player.x + 10 }
+
+        _ ->
+            player
 
 
 update msg model =
-    case msg of
-        Increment ->
-            { model | sf = model.sf * 1.2 }
+    let
+        newModel =
+            case msg of
+                Increment ->
+                    { model | sf = model.sf * 1.25 }
 
-        Decrement ->
-            { model | sf = model.sf * 0.75 }
+                Decrement ->
+                    { model | sf = model.sf * 0.8 }
+
+                KeyMsg code ->
+                    { model | player = keypressedPlayer model.player code }
+    in
+        ( newModel, Cmd.none )
