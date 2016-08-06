@@ -70,7 +70,7 @@ initialWorld =
 
 
 
---if out of range, it's a wall
+---if out of range, it's a wall
 
 
 type Msg
@@ -96,12 +96,18 @@ keypressedPlayer code player =
 
 
 -- Plan for transformations to entities:
+-- * updates due to player inputs
 -- * update positions based on dx, dy
+-- * apply accelerations (friction, gravity, air resistance)
 -- * n*m collisions: check if entities are standing
 -- * n*n collisions: check entities against each other for damage
--- * apply accelerations (friction, gravity, air resistance)
--- * updates due to player inputs
 -- * draw
+
+
+blockUpdate : TetrisState -> Collidable (Standable (Drawable a)) -> Collidable (Standable (Drawable a))
+blockUpdate tetris entity =
+    ---TODO get collision blocks from tetris model
+    entity
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -122,6 +128,7 @@ update msg model =
                                 |> keypressedPlayer code
                                 |> step 1
                                 |> gravity 1
+                                |> blockUpdate model.tetris
                     }
     in
         ( newModel, Cmd.none )

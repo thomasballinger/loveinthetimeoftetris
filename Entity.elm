@@ -27,7 +27,7 @@ type alias Standable x =
 
 
 type alias Collidable x =
-    { x | width : Float, height : Float }
+    { x | width : Float, height : Float, x : Float, y : Float }
 
 
 gravity : Float -> Movable a -> Movable a
@@ -68,6 +68,42 @@ initialPlayer x y =
     , state = Standing
     , dir = Left
     }
+
+
+type CollisionType
+    = Floor
+    | Ceiling
+    | LeftWall
+    | RightWall
+    | None
+
+
+type alias Collision =
+    ( CollisionType, Float )
+
+
+wallCollide : List (Collidable a) -> Collidable (Standable b) -> Collision
+wallCollide entity walls =
+    ( None, 0 )
+
+
+wallAlter : Drawable (Movable a) -> Collision -> Drawable (Movable a)
+wallAlter entity collision =
+    case collision of
+        ( Floor, n ) ->
+            { entity | dy = 0, state = Standing }
+
+        ( Ceiling, n ) ->
+            { entity | dy = 0 }
+
+        ( LeftWall, n ) ->
+            { entity | dx = 0, x = entity.x + n + 1 }
+
+        ( RightWall, n ) ->
+            { entity | dx = 0, x = entity.x - n - 1 }
+
+        ( None, _ ) ->
+            entity
 
 
 
