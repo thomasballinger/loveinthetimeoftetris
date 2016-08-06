@@ -1,10 +1,11 @@
-module StoryView exposing (storyView, Directional(..))
+module StoryView exposing (storyView)
 
-import Collage exposing (collage, toForm, rect, filled, move, scale)
+import Collage exposing (Form, collage, toForm, rect, filled, move, scale)
 import Element exposing (show, Element, image)
 import Text
 import Color exposing (rgb)
-import Tetris exposing (onSpots, boardCols, boardRows)
+import Tetris exposing (onSpots, boardCols, boardRows, TetrisState)
+import Entity exposing (Drawable, Directional(..), drawInfoColor)
 
 
 storyView world =
@@ -14,55 +15,50 @@ storyView world =
             ([ -- Collage.text (Text.fromString (toString world)),
                playerDisplay ( world.sf, world.player.x, world.player.y ) world.player
              ]
-                ++ (List.map (rectForm ( world.sf, world.player.x, world.player.y )) (blocks world.tetris))
-                ++ (List.map (rectForm ( world.sf, world.player.x, world.player.y )) walls)
+                ++ (List.map (drawForm ( world.sf, world.player.x, world.player.y )) (blocks world.tetris))
+                ++ (List.map (drawForm ( world.sf, world.player.x, world.player.y )) walls)
             )
         )
 
 
-type alias EntityRect number =
-    { x : number
-    , y : number
-    , width : number
-    , height : number
-    }
-
-
-type Directional
-    = Left
-    | Right
-
-
+blocks : TetrisState -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float }
 blocks tetris =
     List.map
         (\( x, y ) ->
-            { width = toFloat 100
-            , height = toFloat 100
-            , x = toFloat (x * 100 - 50)
+            { x = toFloat (x * 100 - 50)
             , y = toFloat (y * 100 - 50)
+            , drawinfo = drawInfoColor (rgb 0 100 100) 100 100
             }
         )
         (onSpots tetris)
 
 
+walls : List { drawinfo : Entity.DrawInfo, x : Float, y : Float }
 walls =
-    [ { width = toFloat (100 * (boardCols + 2))
-      , height = 100
+    [ { drawinfo =
+            (drawInfoColor (rgb 100 0 0)
+                (toFloat (100 * (boardCols + 2)))
+                (toFloat 100)
+            )
       , x = (boardCols / 2) * 100
-      , y = -50
+      , y = (toFloat -50)
       }
-    , { width = toFloat (100 * (boardCols + 2))
-      , height = 100
+    , { drawinfo =
+            (drawInfoColor (rgb 100 0 0)
+                (toFloat (100 * (boardCols + 2)))
+                (toFloat 100)
+            )
       , x = (boardCols / 2) * 100
       , y = (boardRows) * 100 + 50
       }
     ]
 
 
-rectForm ( sf, cx, cy ) entityRect =
-    rect (entityRect.width * sf) (entityRect.height * sf)
+drawForm : ( Float, Float, Float ) -> Drawable a -> Form
+drawForm ( sf, cx, cy ) entity =
+    rect (entity.drawinfo.width * sf) (entity.drawinfo.height * sf)
         |> filled (rgb 10 30 50)
-        |> move ( (entityRect.x - cx) * sf, (entityRect.y - cy) * sf )
+        |> move ( (entity.x - cx) * sf, (entity.y - cy) * sf )
 
 
 

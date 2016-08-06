@@ -1,6 +1,5 @@
 module Entity exposing (..)
 
-import StoryView exposing (Directional(..))
 import Color exposing (Color, rgb)
 
 
@@ -10,16 +9,42 @@ type EntityState
     | Running
 
 
+type Directional
+    = Left
+    | Right
+
+
 type alias Drawable x =
-    { x | x : Float, y : Float, drawinfo : DrawInfo, state : EntityState, dir : Directional }
+    { x | x : Float, y : Float, drawinfo : DrawInfo }
 
 
 type alias DrawInfo =
-    { hasStand : Bool, hasJump : Bool, hasLeftRight : Bool, spriteName : String, color : Color, width : Float, height : Float }
+    { fill : Fill, width : Float, height : Float }
+
+
+drawInfoColor : Color -> Float -> Float -> DrawInfo
+drawInfoColor color w h =
+    { fill = Solid color
+    , width = w
+    , height = h
+    }
+
+
+type Fill
+    = Sprite SpriteInfo
+    | Solid Color
+
+
+type alias SpriteInfo =
+    { hasStand : Bool
+    , hasJump : Bool
+    , hasLeftRight : Bool
+    , spriteName : String
+    }
 
 
 type alias Movable x =
-    { x | x : Float, y : Float, dx : Float, dy : Float }
+    { x | x : Float, y : Float, dx : Float, dy : Float, state : EntityState, dir : Directional }
 
 
 type alias Standable x =
@@ -52,11 +77,13 @@ initialPlayer x y =
     { x = x
     , y = y
     , drawinfo =
-        { hasStand = True
-        , hasJump = True
-        , hasLeftRight = True
-        , spriteName = "mario"
-        , color = rgb 10 10 10
+        { fill =
+            Sprite
+                { hasStand = True
+                , hasJump = True
+                , hasLeftRight = True
+                , spriteName = "mario"
+                }
         , width = 30
         , height = 30
         }

@@ -6,8 +6,7 @@ import Html.App as App
 import Html.Events exposing (onClick)
 import Char
 import StoryView exposing (storyView)
-import StoryView exposing (Directional(..))
-import Entity exposing (gravity, step, Drawable, Movable, Standable, Collidable, initialPlayer)
+import Entity exposing (Directional(..), gravity, step, Drawable, Movable, Standable, Collidable, initialPlayer)
 import Tetris exposing (divGrid, exampleBoard, TetrisState)
 import Keyboard
 
