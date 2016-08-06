@@ -1,9 +1,13 @@
-module Tetris exposing (divGrid, exampleBoard, onSpots, boardRows, boardCols)
+module Tetris exposing (divGrid, exampleBoard, onSpots, boardRows, boardCols, TetrisState)
 
 import Html.Attributes exposing (class)
 import Html exposing (div)
 import Array
 import Util exposing (range)
+
+
+type alias TetrisState =
+    Array.Array Int
 
 
 divGrid grid =
@@ -64,6 +68,7 @@ gridSet x y v grid =
     Array.set (y * boardCols + x) v grid
 
 
+exampleBoard : Array.Array Int
 exampleBoard =
     initialBoard
         |> gridSet 1 2 1

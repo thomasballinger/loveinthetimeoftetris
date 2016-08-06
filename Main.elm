@@ -1,30 +1,44 @@
 module Main exposing (..)
 
 import Html.Attributes exposing (class, rel, src, href)
-import Html exposing (div, button, text, br, node)
+import Html exposing (div, button, text, br, node, Html)
 import Html.App as App
 import Html.Events exposing (onClick)
 import Char
 import StoryView exposing (storyView)
 import StoryView exposing (Directional(..))
-import Entity exposing (gravity, step)
-import Tetris exposing (divGrid, exampleBoard)
+import Entity exposing (gravity, step, Drawable, Movable, Standable, Collidable, initialPlayer)
+import Tetris exposing (divGrid, exampleBoard, TetrisState)
 import Keyboard
+
+
+type alias Model =
+    { tetris : TetrisState
+    , player : Movable (Standable (Collidable (Drawable {})))
+    , sf : Float
+    }
 
 
 main =
     App.program
-        { init = ( initialWorld, Cmd.none )
+        { init = init
         , view = view
         , update = update
         , subscriptions = subscriptions
         }
 
 
+init : ( Model, Cmd Msg )
+init =
+    ( initialWorld, Cmd.none )
+
+
+subscriptions : Model -> Sub Msg
 subscriptions model =
     Keyboard.presses KeyMsg
 
 
+view : Model -> Html Msg
 view model =
     div []
         [ css "http://localhost:8080/style.css"
@@ -49,7 +63,10 @@ tetrisView tetris =
 
 
 initialWorld =
-    { tetris = exampleBoard, player = { x = 50, y = 13, dir = Left, dx = 0, dy = 0 }, sf = 1 }
+    { tetris = exampleBoard
+    , player = initialPlayer 50 13
+    , sf = 1
+    }
 
 
 
@@ -77,6 +94,17 @@ keypressedPlayer code player =
             player
 
 
+
+-- Plan for transformations to entities:
+-- * update positions based on dx, dy
+-- * n*m collisions: check if entities are standing
+-- * n*n collisions: check entities against each other for damage
+-- * apply accelerations (friction, gravity, air resistance)
+-- * updates due to player inputs
+-- * draw
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
         newModel =

@@ -1,13 +1,17 @@
 module Entity exposing (..)
 
-import Color exposing (Color)
+import StoryView exposing (Directional(..))
+import Color exposing (Color, rgb)
 
 
--- for sprites with left and right facing
+type EntityState
+    = Standing
+    | Jumping
+    | Running
 
 
 type alias Drawable x =
-    { x | x : Float, y : Float, drawinfo : DrawInfo }
+    { x | x : Float, y : Float, drawinfo : DrawInfo, state : EntityState, dir : Directional }
 
 
 type alias DrawInfo =
@@ -42,6 +46,28 @@ step dt entity =
 collide : Collidable a -> Collidable b -> Bool
 collide e1 e2 =
     False
+
+
+initialPlayer x y =
+    { x = x
+    , y = y
+    , drawinfo =
+        { hasStand = True
+        , hasJump = True
+        , hasLeftRight = True
+        , spriteName = "mario"
+        , color = rgb 10 10 10
+        , width = 30
+        , height = 30
+        }
+    , dx = 0
+    , dy = 0
+    , heightToCenter = 10
+    , width = 30
+    , height = 30
+    , state = Standing
+    , dir = Left
+    }
 
 
 
