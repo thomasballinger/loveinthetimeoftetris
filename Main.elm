@@ -5,6 +5,7 @@ import Html exposing (div, button, text, br, node, Html)
 import Html.App as App
 import Html.Events exposing (onClick)
 import Char
+import Time
 import StoryView exposing (storyView, tetrisBlocksWithWalls)
 import Entity exposing (..)
 import Tetris exposing (divGrid, exampleBoard, TetrisState)
@@ -15,7 +16,13 @@ type alias Model =
     { tetris : TetrisState
     , player : Movable (Standable (Collidable (Drawable {})))
     , sf : Float
+    , lastTick : Time.Time
+    , keysDown : KeysDown
     }
+
+
+type alias KeysDown =
+    { w : Bool, a : Bool, s : Bool, d : Bool }
 
 
 main =
@@ -36,12 +43,18 @@ initialWorld =
     { tetris = exampleBoard
     , player = initialPlayer 50 13
     , sf = 1
+    , lastTick = 0
+    , keysDown = { w = False, a = False, s = False, d = False }
     }
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Keyboard.presses KeyMsg
+    Sub.batch
+        [ Keyboard.downs KeyDownMsg
+        , Keyboard.ups KeyUpMsg
+        , Time.every 32 Tick
+        ]
 
 
 view : Model -> Html Msg
@@ -75,32 +88,41 @@ tetrisView tetris =
 type Msg
     = Increment
     | Decrement
-    | KeyMsg Keyboard.KeyCode
+    | KeyDownMsg Keyboard.KeyCode
+    | KeyUpMsg Keyboard.KeyCode
+    | Tick Time.Time
 
 
-keypressedPlayer code player =
-    case ( Char.fromCode code, player.state ) of
-        ( 'w', Standing ) ->
-            { player | dy = player.dy + 10, state = Jumping }
+keypressedPlayer keysDown player =
+    let
+        afterJump =
+            if keysDown.w && player.state == Standing then
+                { player | dy = player.dy + 10, state = Jumping }
+            else
+                player
 
-        ( 'a', _ ) ->
-            { player | dir = Left, dx = max (player.dx - 1) (-10) }
-
-        ( 'd', _ ) ->
-            { player | dir = Right, dx = min (player.dx + 1) 10 }
-
-        _ ->
-            player
+        afterLR =
+            if keysDown.a then
+                { afterLR | dir = Left, dx = max (afterLR.dx - 1) (-10) }
+            else if keysDown.d then
+                { afterLR | dir = Right, dx = min (afterLR.dx + 1) 10 }
+            else
+                afterLR
+    in
+        afterLR
 
 
 slowedPlayer player =
-    { player
-        | dx =
-            if (abs player.dx) < 0.1 then
-                0
-            else
-                player.dx * 0.6
-    }
+    if player.state == Standing then
+        { player
+            | dx =
+                if (abs player.dx) < 0.1 then
+                    0
+                else
+                    player.dx * 0.6
+        }
+    else
+        player
 
 
 
@@ -136,15 +158,70 @@ update msg model =
                 Decrement ->
                     { model | sf = model.sf * 0.8 }
 
-                KeyMsg code ->
-                    { model
-                        | player =
-                            model.player
-                                |> slowedPlayer
-                                |> keypressedPlayer code
-                                |> step 1
-                                |> gravity 1
-                                |> blockUpdate model.tetris
-                    }
+                KeyDownMsg code ->
+                    let
+                        keysDown =
+                            model.keysDown
+
+                        newKeysDown =
+                            case Char.fromCode code of
+                                'w' ->
+                                    { keysDown | w = True }
+
+                                'a' ->
+                                    { keysDown | a = True }
+
+                                's' ->
+                                    { keysDown | s = True }
+
+                                'd' ->
+                                    { keysDown | d = True }
+
+                                _ ->
+                                    keysDown
+                    in
+                        { model | keysDown = Debug.log "keys down" newKeysDown }
+
+                KeyUpMsg code ->
+                    let
+                        keysDown =
+                            model.keysDown
+
+                        newKeysDown =
+                            case Char.fromCode code of
+                                'w' ->
+                                    { keysDown | w = False }
+
+                                'a' ->
+                                    { keysDown | a = False }
+
+                                's' ->
+                                    { keysDown | s = False }
+
+                                'd' ->
+                                    { keysDown | d = False }
+
+                                _ ->
+                                    keysDown
+                    in
+                        { model | keysDown = newKeysDown }
+
+                Tick time ->
+                    if model.lastTick == 0 then
+                        { model | lastTick = time }
+                    else
+                        let
+                            delta =
+                                time - model.lastTick
+                        in
+                            { model
+                                | player =
+                                    model.player
+                                        |> slowedPlayer
+                                        |> keypressedPlayer model.keysDown
+                                        |> step 1
+                                        |> gravity 1
+                                        |> blockUpdate model.tetris
+                            }
     in
         ( newModel, Cmd.none )
