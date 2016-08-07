@@ -79,18 +79,28 @@ type Msg
 
 
 keypressedPlayer code player =
-    case Char.fromCode code of
-        'w' ->
-            { player | dy = player.dy + 10 }
+    case ( Char.fromCode code, player.state ) of
+        ( 'w', Standing ) ->
+            { player | dy = player.dy + 10, state = Jumping }
 
-        'a' ->
-            { player | dir = Left, x = player.x - 10 }
+        ( 'a', _ ) ->
+            { player | dir = Left, dx = max (player.dx - 1) (-10) }
 
-        'd' ->
-            { player | dir = Right, x = player.x + 10 }
+        ( 'd', _ ) ->
+            { player | dir = Right, dx = min (player.dx + 1) 10 }
 
         _ ->
             player
+
+
+slowedPlayer player =
+    { player
+        | dx =
+            if (abs player.dx) < 0.1 then
+                0
+            else
+                player.dx * 0.6
+    }
 
 
 
@@ -130,6 +140,7 @@ update msg model =
                     { model
                         | player =
                             model.player
+                                |> slowedPlayer
                                 |> keypressedPlayer code
                                 |> step 1
                                 |> gravity 1
