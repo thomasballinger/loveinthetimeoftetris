@@ -5,7 +5,7 @@ import Html exposing (div, button, text, br, node, Html)
 import Html.App as App
 import Html.Events exposing (onClick)
 import Char
-import StoryView exposing (storyView)
+import StoryView exposing (storyView, tetrisBlocksWithWalls)
 import Entity exposing (Directional(..), gravity, step, Drawable, Movable, Standable, Collidable, initialPlayer)
 import Tetris exposing (divGrid, exampleBoard, TetrisState)
 import Keyboard
@@ -30,6 +30,13 @@ main =
 init : ( Model, Cmd Msg )
 init =
     ( initialWorld, Cmd.none )
+
+
+initialWorld =
+    { tetris = exampleBoard
+    , player = initialPlayer 50 13
+    , sf = 1
+    }
 
 
 subscriptions : Model -> Sub Msg
@@ -59,13 +66,6 @@ js path =
 
 tetrisView tetris =
     div [ class "board" ] (divGrid tetris)
-
-
-initialWorld =
-    { tetris = exampleBoard
-    , player = initialPlayer 50 13
-    , sf = 1
-    }
 
 
 
@@ -105,8 +105,11 @@ keypressedPlayer code player =
 
 blockUpdate : TetrisState -> Collidable (Standable (Drawable a)) -> Collidable (Standable (Drawable a))
 blockUpdate tetris entity =
-    ---TODO get collision blocks from tetris model
-    entity
+    let
+        blocks =
+            tetrisBlocksWithWalls tetris
+    in
+        entity
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

@@ -4,6 +4,7 @@ import Html.Attributes exposing (class)
 import Html exposing (div)
 import Array
 import Util exposing (range)
+import Entity exposing (Collidable)
 
 
 type alias TetrisState =

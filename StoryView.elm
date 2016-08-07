@@ -1,4 +1,4 @@
-module StoryView exposing (storyView)
+module StoryView exposing (storyView, tetrisBlocksWithWalls)
 
 import Collage exposing (Form, collage, toForm, rect, filled, move, scale)
 import Element exposing (show, Element, image)
@@ -15,47 +15,54 @@ storyView world =
             ([ -- Collage.text (Text.fromString (toString world)),
                draw ( world.sf, world.player.x, world.player.y ) world.player
              ]
-                ++ (List.map (draw ( world.sf, world.player.x, world.player.y )) (blocks world.tetris))
-                ++ (List.map (draw ( world.sf, world.player.x, world.player.y )) walls)
+                ++ (List.map (draw ( world.sf, world.player.x, world.player.y )) (displayBlocks world.tetris))
+                ++ (List.map (draw ( world.sf, world.player.x, world.player.y )) (displayWalls walls))
             )
         )
 
 
-blocks : TetrisState -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState }
-blocks tetris =
-    List.map
-        (\( x, y ) ->
-            { x = toFloat (x * 100 - 50)
-            , y = toFloat (y * 100 - 50)
-            , drawinfo = drawInfoColor (rgb 0 100 100) 100 100
-            , dir = Neither
-            , state = Standing
-            }
-        )
-        (onSpots tetris)
+displayBlocks : TetrisState -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState }
+displayBlocks tetris =
+    tetrisBlocks tetris
+        |> List.map (xywhToDrawable (rgb 0 200 0))
+        |> Debug.log "asdf"
 
 
-walls : List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState }
+displayWalls : List { x : Float, y : Float, w : Float, h : Float } -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState }
+displayWalls walls =
+    List.map (xywhToDrawable (rgb 100 0 0)) walls
+
+
+xywhToDrawable : Color -> { x : Float, y : Float, w : Float, h : Float } -> { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState }
+xywhToDrawable color { x, y, w, h } =
+    { x = x
+    , y = y
+    , drawinfo = drawInfoColor color w h
+    , dir = Neither
+    , state = Standing
+    }
+
+
+tetrisBlocks tetris =
+    tetris
+        |> onSpots
+        |> List.map (\( x, y ) -> { x = toFloat x * 100 - 50, y = toFloat y * 100 - 50, w = 100.0, h = 100.0 })
+
+
+tetrisBlocksWithWalls tetris =
+    (tetrisBlocks tetris) ++ walls
+
+
 walls =
-    [ { drawinfo =
-            (drawInfoColor (rgb 100 0 0)
-                (toFloat (100 * (boardCols + 2)))
-                (toFloat 100)
-            )
-      , x = (boardCols / 2) * 100
-      , y = (toFloat -50)
-      , dir = Neither
-      , state = Standing
+    [ { x = (boardCols / 2) * 100
+      , y = toFloat -50
+      , w = toFloat (100 * (boardCols + 2))
+      , h = toFloat 100
       }
-    , { drawinfo =
-            (drawInfoColor (rgb 100 0 0)
-                (toFloat (100 * (boardCols + 2)))
-                (toFloat 100)
-            )
-      , x = (boardCols / 2) * 100
-      , y = (boardRows) * 100 + 50
-      , dir = Neither
-      , state = Standing
+    , { x = (boardCols / 2) * 100
+      , y = toFloat (boardRows * 100) + 50
+      , w = toFloat (100 * (boardCols + 2))
+      , h = toFloat 100
       }
     ]
 

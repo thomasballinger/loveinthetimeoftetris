@@ -53,7 +53,7 @@ type alias Standable x =
 
 
 type alias Collidable x =
-    { x | width : Float, height : Float, x : Float, y : Float }
+    { x | w : Float, h : Float, x : Float, y : Float }
 
 
 gravity : Float -> Movable a -> Movable a
@@ -91,8 +91,8 @@ initialPlayer x y =
     , dx = 0
     , dy = 0
     , heightToCenter = 10
-    , width = 30
-    , height = 30
+    , w = 30
+    , h = 30
     , state = Standing
     , dir = Left
     }
