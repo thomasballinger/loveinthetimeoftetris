@@ -93,7 +93,7 @@ type Msg
     | Tick Time.Time
 
 
-keypressedPlayer keysDown player =
+keypressedPlayer keysDown dt player =
     let
         afterJump =
             if keysDown.w && player.onGround then
@@ -107,13 +107,13 @@ keypressedPlayer keysDown player =
                     if keysDown.a then
                         { afterJump
                             | dir = Left
-                            , dx = max (afterJump.dx - 2) (-10)
+                            , dx = max (afterJump.dx - 2 * dt) (-10)
                             , state = Running
                         }
                     else if keysDown.d then
                         { afterJump
                             | dir = Right
-                            , dx = min (afterJump.dx + 2) 10
+                            , dx = min (afterJump.dx + 2 * dt) 10
                             , state = Running
                         }
                     else
@@ -123,12 +123,12 @@ keypressedPlayer keysDown player =
                     if keysDown.a then
                         { afterJump
                             | dir = Left
-                            , dx = max (afterJump.dx - 1) (-10)
+                            , dx = max (afterJump.dx - 1 * dt) (-10)
                         }
                     else if keysDown.d then
                         { afterJump
                             | dir = Right
-                            , dx = min (afterJump.dx + 1) 10
+                            , dx = min (afterJump.dx + 1 * dt) 10
                         }
                     else
                         afterJump
@@ -237,7 +237,7 @@ update msg model =
                                 | player =
                                     model.player
                                         |> slowedPlayer 0.5
-                                        |> keypressedPlayer model.keysDown
+                                        |> keypressedPlayer model.keysDown 0.5
                                         |> step 0.5
                                         |> gravity 0.5
                                         |> blockUpdate model.tetris
