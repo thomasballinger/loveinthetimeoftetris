@@ -103,35 +103,92 @@ type CollisionType
     | Ceiling
     | LeftWall
     | RightWall
-    | None
 
 
-type alias Collision =
-    ( CollisionType, Float )
+type PossibleCollision
+    = NoCollision
+    | Collision CollisionType Float
 
 
-wallCollide : List (Collidable a) -> Collidable (Standable b) -> Collision
-wallCollide entity walls =
-    ( None, 0 )
+
+--- TODO: To choose which collision to report, find the dimension that overlaps most!
 
 
-wallAlter : Drawable (Movable a) -> Collision -> Drawable (Movable a)
+wallCollide : Collidable (Standable b) -> Collidable a -> PossibleCollision
+wallCollide e w =
+    let
+        left1 =
+            e.x - e.w / 2
+
+        right1 =
+            e.x + e.w / 2
+
+        bottom1 =
+            e.y - e.h / 2
+
+        top1 =
+            e.y + e.h / 2
+
+        left2 =
+            w.x - w.w / 2
+
+        right2 =
+            w.x + w.w / 2
+
+        bottom2 =
+            w.y - w.h / 2
+
+        top2 =
+            w.y + w.h / 2
+
+        touching =
+            not
+                ((left2 > right1)
+                    || (right2 < left1)
+                    || (top2 < bottom1)
+                    || (bottom2 > top1)
+                )
+    in
+        case touching of
+            True ->
+                (Collision Floor 0)
+
+            False ->
+                NoCollision
+
+
+wallAlter : Collidable (Movable a) -> PossibleCollision -> Collidable (Movable a)
 wallAlter entity collision =
     case collision of
-        ( Floor, n ) ->
+        Collision Floor n ->
             { entity | dy = 0, state = Standing }
 
-        ( Ceiling, n ) ->
+        Collision Ceiling n ->
             { entity | dy = 0 }
 
-        ( LeftWall, n ) ->
+        Collision LeftWall n ->
             { entity | dx = 0, x = entity.x + n + 1 }
 
-        ( RightWall, n ) ->
+        Collision RightWall n ->
             { entity | dx = 0, x = entity.x - n - 1 }
 
-        ( None, _ ) ->
+        _ ->
             entity
+
+
+wallCollision : List (Collidable a) -> Collidable (Standable b) -> PossibleCollision
+wallCollision walls entity =
+    case walls of
+        [] ->
+            NoCollision
+
+        wall :: rest ->
+            case wallCollide entity wall of
+                NoCollision ->
+                    wallCollision rest entity
+
+                collision ->
+                    collision
 
 
 

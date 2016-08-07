@@ -25,7 +25,6 @@ displayBlocks : TetrisState -> List { drawinfo : Entity.DrawInfo, x : Float, y :
 displayBlocks tetris =
     tetrisBlocks tetris
         |> List.map (xywhToDrawable (rgb 0 200 0))
-        |> Debug.log "asdf"
 
 
 displayWalls : List { x : Float, y : Float, w : Float, h : Float } -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState }

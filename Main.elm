@@ -6,7 +6,7 @@ import Html.App as App
 import Html.Events exposing (onClick)
 import Char
 import StoryView exposing (storyView, tetrisBlocksWithWalls)
-import Entity exposing (Directional(..), gravity, step, Drawable, Movable, Standable, Collidable, initialPlayer)
+import Entity exposing (..)
 import Tetris exposing (divGrid, exampleBoard, TetrisState)
 import Keyboard
 
@@ -103,13 +103,16 @@ keypressedPlayer code player =
 -- * draw
 
 
-blockUpdate : TetrisState -> Collidable (Standable (Drawable a)) -> Collidable (Standable (Drawable a))
+blockUpdate : TetrisState -> Collidable (Movable (Standable a)) -> Collidable (Movable (Standable a))
 blockUpdate tetris entity =
     let
         blocks =
             tetrisBlocksWithWalls tetris
+
+        collision =
+            Debug.log "collision" (wallCollision blocks entity)
     in
-        entity
+        wallAlter entity collision
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
