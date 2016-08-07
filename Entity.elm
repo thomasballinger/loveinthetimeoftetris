@@ -12,10 +12,11 @@ type EntityState
 type Directional
     = Left
     | Right
+    | Neither
 
 
 type alias Drawable x =
-    { x | x : Float, y : Float, drawinfo : DrawInfo }
+    { x | x : Float, y : Float, drawinfo : DrawInfo, dir : Directional, state : EntityState }
 
 
 type alias DrawInfo =
@@ -36,7 +37,7 @@ type Fill
 
 
 type alias SpriteInfo =
-    { hasStand : Bool
+    { hasRun : Bool
     , hasJump : Bool
     , hasLeftRight : Bool
     , spriteName : String
@@ -79,7 +80,7 @@ initialPlayer x y =
     , drawinfo =
         { fill =
             Sprite
-                { hasStand = True
+                { hasRun = True
                 , hasJump = True
                 , hasLeftRight = True
                 , spriteName = "mario"

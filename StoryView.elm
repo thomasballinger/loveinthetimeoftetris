@@ -3,9 +3,9 @@ module StoryView exposing (storyView)
 import Collage exposing (Form, collage, toForm, rect, filled, move, scale)
 import Element exposing (show, Element, image)
 import Text
-import Color exposing (rgb)
+import Color exposing (Color, rgb)
 import Tetris exposing (onSpots, boardCols, boardRows, TetrisState)
-import Entity exposing (Drawable, Directional(..), drawInfoColor)
+import Entity exposing (Drawable, Directional(..), EntityState(..), drawInfoColor)
 
 
 storyView world =
@@ -13,27 +13,29 @@ storyView world =
         (collage 400
             400
             ([ -- Collage.text (Text.fromString (toString world)),
-               playerDisplay ( world.sf, world.player.x, world.player.y ) world.player
+               draw ( world.sf, world.player.x, world.player.y ) world.player
              ]
-                ++ (List.map (drawForm ( world.sf, world.player.x, world.player.y )) (blocks world.tetris))
-                ++ (List.map (drawForm ( world.sf, world.player.x, world.player.y )) walls)
+                ++ (List.map (draw ( world.sf, world.player.x, world.player.y )) (blocks world.tetris))
+                ++ (List.map (draw ( world.sf, world.player.x, world.player.y )) walls)
             )
         )
 
 
-blocks : TetrisState -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float }
+blocks : TetrisState -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState }
 blocks tetris =
     List.map
         (\( x, y ) ->
             { x = toFloat (x * 100 - 50)
             , y = toFloat (y * 100 - 50)
             , drawinfo = drawInfoColor (rgb 0 100 100) 100 100
+            , dir = Neither
+            , state = Standing
             }
         )
         (onSpots tetris)
 
 
-walls : List { drawinfo : Entity.DrawInfo, x : Float, y : Float }
+walls : List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState }
 walls =
     [ { drawinfo =
             (drawInfoColor (rgb 100 0 0)
@@ -42,6 +44,8 @@ walls =
             )
       , x = (boardCols / 2) * 100
       , y = (toFloat -50)
+      , dir = Neither
+      , state = Standing
       }
     , { drawinfo =
             (drawInfoColor (rgb 100 0 0)
@@ -50,15 +54,17 @@ walls =
             )
       , x = (boardCols / 2) * 100
       , y = (boardRows) * 100 + 50
+      , dir = Neither
+      , state = Standing
       }
     ]
 
 
-drawForm : ( Float, Float, Float ) -> Drawable a -> Form
-drawForm ( sf, cx, cy ) entity =
-    rect (entity.drawinfo.width * sf) (entity.drawinfo.height * sf)
-        |> filled (rgb 10 30 50)
-        |> move ( (entity.x - cx) * sf, (entity.y - cy) * sf )
+drawSolid : ( Float, Float, Float, Float ) -> Color -> Form
+drawSolid ( x, y, w, h ) color =
+    rect w h
+        |> filled color
+        |> move ( x, y )
 
 
 
@@ -68,32 +74,76 @@ drawForm ( sf, cx, cy ) entity =
 -- given a scale, center, and a width and height, draw the thing
 
 
-playerDisplay ( sf, cx, cy ) player =
+draw : ( Float, Float, Float ) -> Drawable a -> Form
+draw ( sf, cx, cy ) entity =
+    let
+        x =
+            (entity.x - cx) * sf
+
+        y =
+            (entity.y - cy) * sf
+
+        w =
+            (entity.drawinfo.width * sf)
+
+        h =
+            (entity.drawinfo.height * sf)
+    in
+        case entity.drawinfo.fill of
+            Entity.Sprite spriteInfo ->
+                spriteDraw ( x, y, w, h ) spriteInfo entity
+
+            Entity.Solid solidInfo ->
+                drawSolid ( x, y, w, h ) solidInfo
+
+
+spriteDraw : ( Float, Float, Float, Float ) -> Entity.SpriteInfo -> Drawable a -> Form
+spriteDraw ( x, y, w, h ) spriteInfo entity =
     let
         verb =
-            if player.y > 0 then
-                "jump"
-            else if player.dx /= 0 then
-                "walk"
+            if spriteInfo.hasRun || spriteInfo.hasJump then
+                case entity.state of
+                    Standing ->
+                        "/stand"
+
+                    Jumping ->
+                        if spriteInfo.hasJump then
+                            "/jump"
+                        else
+                            "/stand"
+
+                    Running ->
+                        if spriteInfo.hasRun then
+                            "/walk"
+                        else
+                            "/stand"
             else
-                "stand"
+                ""
 
         dir =
-            case player.dir of
-                Left ->
-                    "left"
+            if spriteInfo.hasLeftRight then
+                case entity.dir of
+                    Left ->
+                        "/left"
 
-                Right ->
-                    "right"
+                    Right ->
+                        "/right"
+
+                    Neither ->
+                        ""
+            else
+                ""
+
+        root =
+            "http://localhost:8080/imgs/"
 
         src =
-            "http://elm-lang.org/imgs/mario/" ++ verb ++ "/" ++ dir ++ ".gif"
+            root ++ spriteInfo.spriteName ++ verb ++ dir ++ ".gif"
 
-        playerImage =
-            image 35 35 src
+        entityImage =
+            image (round w) (round h) src
     in
-        (playerImage
+        (entityImage
             |> toForm
-            |> scale sf
-            |> move ( (player.x - cx) * sf, (player.y - cy) * sf )
+            |> move ( x, y )
         )
