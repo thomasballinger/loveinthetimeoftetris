@@ -21,24 +21,25 @@ storyView world =
         )
 
 
-displayBlocks : TetrisState -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState }
+displayBlocks : TetrisState -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool }
 displayBlocks tetris =
     tetrisBlocks tetris
         |> List.map (xywhToDrawable (rgb 0 200 0))
 
 
-displayWalls : List { x : Float, y : Float, w : Float, h : Float } -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState }
+displayWalls : List { x : Float, y : Float, w : Float, h : Float } -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool }
 displayWalls walls =
     List.map (xywhToDrawable (rgb 100 0 0)) walls
 
 
-xywhToDrawable : Color -> { x : Float, y : Float, w : Float, h : Float } -> { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState }
+xywhToDrawable : Color -> { x : Float, y : Float, w : Float, h : Float } -> { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool }
 xywhToDrawable color { x, y, w, h } =
     { x = x
     , y = y
     , drawinfo = drawInfoColor color w h
     , dir = Neither
     , state = Standing
+    , onGround = True
     }
 
 
@@ -108,17 +109,17 @@ spriteDraw ( x, y, w, h ) spriteInfo entity =
     let
         verb =
             if spriteInfo.hasRun || spriteInfo.hasJump then
-                case entity.state of
-                    Standing ->
-                        "/stand"
-
-                    Jumping ->
+                case ( entity.state, entity.onGround ) of
+                    ( _, False ) ->
                         if spriteInfo.hasJump then
                             "/jump"
                         else
                             "/stand"
 
-                    Running ->
+                    ( Standing, True ) ->
+                        "/stand"
+
+                    ( Running, True ) ->
                         if spriteInfo.hasRun then
                             "/walk"
                         else

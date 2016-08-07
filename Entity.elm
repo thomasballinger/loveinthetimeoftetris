@@ -5,7 +5,6 @@ import Color exposing (Color, rgb)
 
 type EntityState
     = Standing
-    | Jumping
     | Running
 
 
@@ -16,7 +15,7 @@ type Directional
 
 
 type alias Drawable x =
-    { x | x : Float, y : Float, drawinfo : DrawInfo, dir : Directional, state : EntityState }
+    { x | x : Float, y : Float, drawinfo : DrawInfo, dir : Directional, state : EntityState, onGround : Bool }
 
 
 type alias DrawInfo =
@@ -45,7 +44,7 @@ type alias SpriteInfo =
 
 
 type alias Movable x =
-    { x | x : Float, y : Float, dx : Float, dy : Float, state : EntityState, dir : Directional }
+    { x | x : Float, y : Float, dx : Float, dy : Float, dir : Directional, onGround : Bool }
 
 
 type alias Standable x =
@@ -94,6 +93,7 @@ initialPlayer x y =
     , w = 30
     , h = 30
     , state = Standing
+    , onGround = True
     , dir = Left
     }
 
@@ -161,7 +161,7 @@ wallAlter : Collidable (Movable a) -> PossibleCollision -> Collidable (Movable a
 wallAlter entity collision =
     case collision of
         Collision Floor n ->
-            { entity | dy = 0, state = Standing }
+            { entity | dy = 0, onGround = True }
 
         Collision Ceiling n ->
             { entity | dy = 0 }

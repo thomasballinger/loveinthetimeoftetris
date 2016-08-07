@@ -53,7 +53,7 @@ subscriptions model =
     Sub.batch
         [ Keyboard.downs KeyDownMsg
         , Keyboard.ups KeyUpMsg
-        , Time.every 32 Tick
+        , Time.every 16 Tick
         ]
 
 
@@ -96,43 +96,54 @@ type Msg
 keypressedPlayer keysDown player =
     let
         afterJump =
-            if keysDown.w && player.state == Standing then
-                { player | dy = player.dy + 10, state = Jumping }
+            if keysDown.w && player.onGround then
+                { player | dy = player.dy + 10, onGround = False }
             else
                 player
 
         afterLR =
-            if keysDown.a then
-                { afterLR | dir = Left, dx = max (afterLR.dx - 1) (-10) }
-            else if keysDown.d then
-                { afterLR | dir = Right, dx = min (afterLR.dx + 1) 10 }
-            else
-                afterLR
+            case afterJump.onGround of
+                True ->
+                    if keysDown.a then
+                        { afterJump
+                            | dir = Left
+                            , dx = max (afterJump.dx - 2) (-10)
+                            , state = Running
+                        }
+                    else if keysDown.d then
+                        { afterJump
+                            | dir = Right
+                            , dx = min (afterJump.dx + 2) 10
+                            , state = Running
+                        }
+                    else
+                        afterJump
+
+                False ->
+                    if keysDown.a then
+                        { afterJump
+                            | dir = Left
+                            , dx = max (afterJump.dx - 1) (-10)
+                        }
+                    else if keysDown.d then
+                        { afterJump
+                            | dir = Right
+                            , dx = min (afterJump.dx + 1) 10
+                        }
+                    else
+                        afterJump
     in
         afterLR
 
 
 slowedPlayer player =
-    if player.state == Standing then
-        { player
-            | dx =
-                if (abs player.dx) < 0.1 then
-                    0
-                else
-                    player.dx * 0.6
-        }
+    if (player.onGround) then
+        if (abs player.dx) < 0.2 then
+            { player | dx = 0, state = Standing }
+        else
+            { player | dx = player.dx * 0.7 }
     else
-        player
-
-
-
--- Plan for transformations to entities:
--- * updates due to player inputs
--- * update positions based on dx, dy
--- * apply accelerations (friction, gravity, air resistance)
--- * n*m collisions: check if entities are standing
--- * n*n collisions: check entities against each other for damage
--- * draw
+        { player | dx = player.dx * 0.9 }
 
 
 blockUpdate : TetrisState -> Collidable (Movable (Standable a)) -> Collidable (Movable (Standable a))
@@ -165,22 +176,22 @@ update msg model =
 
                         newKeysDown =
                             case Char.fromCode code of
-                                'w' ->
+                                'W' ->
                                     { keysDown | w = True }
 
-                                'a' ->
+                                'A' ->
                                     { keysDown | a = True }
 
-                                's' ->
+                                'S' ->
                                     { keysDown | s = True }
 
-                                'd' ->
+                                'D' ->
                                     { keysDown | d = True }
 
                                 _ ->
                                     keysDown
                     in
-                        { model | keysDown = Debug.log "keys down" newKeysDown }
+                        { model | keysDown = newKeysDown }
 
                 KeyUpMsg code ->
                     let
@@ -189,16 +200,16 @@ update msg model =
 
                         newKeysDown =
                             case Char.fromCode code of
-                                'w' ->
+                                'W' ->
                                     { keysDown | w = False }
 
-                                'a' ->
+                                'A' ->
                                     { keysDown | a = False }
 
-                                's' ->
+                                'S' ->
                                     { keysDown | s = False }
 
-                                'd' ->
+                                'D' ->
                                     { keysDown | d = False }
 
                                 _ ->
@@ -219,8 +230,8 @@ update msg model =
                                     model.player
                                         |> slowedPlayer
                                         |> keypressedPlayer model.keysDown
-                                        |> step 1
-                                        |> gravity 1
+                                        |> step 0.5
+                                        |> gravity 0.5
                                         |> blockUpdate model.tetris
                             }
     in
