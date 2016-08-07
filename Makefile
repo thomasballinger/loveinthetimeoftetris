@@ -5,8 +5,8 @@ index.html: Main.elm
 
 style.css: index.html
 
-deploy: index.html style.css
-	rsync -r index.html style.css tom:/home/tomb/elmgame
+deploy: index.html style.css imgs
+	rsync -r index.html style.css imgs tom:/home/tomb/elmgame
 
 #deploy should be updated to make changes to the html
 
