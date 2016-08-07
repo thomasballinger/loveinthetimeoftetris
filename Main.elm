@@ -136,14 +136,22 @@ keypressedPlayer keysDown player =
         afterLR
 
 
-slowedPlayer player =
+slowedPlayer dt player =
     if (player.onGround) then
         if (abs player.dx) < 0.2 then
             { player | dx = 0, state = Standing }
         else
-            { player | dx = player.dx * 0.7 }
+            let
+                μ =
+                    0.7
+            in
+                { player | dx = player.dx * μ ^ dt }
     else
-        { player | dx = player.dx * 0.9 }
+        let
+            μ =
+                0.9
+        in
+            { player | dx = player.dx * μ ^ dt }
 
 
 blockUpdate : TetrisState -> Collidable (Movable (Standable a)) -> Collidable (Movable (Standable a))
@@ -153,7 +161,7 @@ blockUpdate tetris entity =
             tetrisBlocksWithWalls tetris
 
         collision =
-            Debug.log "collision" (wallCollision blocks entity)
+            wallCollision blocks entity
     in
         wallAlter entity collision
 
@@ -228,7 +236,7 @@ update msg model =
                             { model
                                 | player =
                                     model.player
-                                        |> slowedPlayer
+                                        |> slowedPlayer 0.5
                                         |> keypressedPlayer model.keysDown
                                         |> step 0.5
                                         |> gravity 0.5
