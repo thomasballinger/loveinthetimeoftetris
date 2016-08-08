@@ -1,4 +1,4 @@
-module Tetris exposing (divGrid, onSpots, boardRows, boardCols, TetrisState, spots, exampleTetrisState)
+module Tetris exposing (divGrid, onSpots, boardRows, boardCols, TetrisState, tetrisGrid, exampleTetrisState, tetrisRight, tetrisLeft, tetrisDown)
 
 import Html.Attributes exposing (class)
 import Html exposing (div)
@@ -22,14 +22,24 @@ exampleTetrisState =
     (TetrisState initialBoard pieceJ1 ( 4, 2 ) ( 4, 1 ) 0)
 
 
-pieceSpots : Piece -> ( Int, Int ) -> Array.Array Int
+pieceGrid : Piece -> ( Int, Int ) -> Array.Array Int
+pieceGrid p ( dx, dy ) =
+    spotsOnGrid p.texture (movedSpots ( dx, dy ) p.spots)
+
+
+spotsOnGrid : Int -> List ( Int, Int ) -> Array.Array Int
+spotsOnGrid v spots =
+    List.foldl (\spot acc -> gridSet spot v acc) initialBoard spots
+
+
+pieceSpots : Piece -> ( Int, Int ) -> List ( Int, Int )
 pieceSpots p ( dx, dy ) =
-    List.foldl (\( x, y ) -> gridSet (x + dx) (y + dy) p.texture) initialBoard p.spots
+    List.map (pointAdd ( dx, dy )) p.spots
 
 
-spots : TetrisState -> Array.Array Int
-spots tetris =
-    arrayAdd tetris.dead (pieceSpots tetris.active tetris.curSpot)
+tetrisGrid : TetrisState -> Array.Array Int
+tetrisGrid tetris =
+    arrayAdd tetris.dead (pieceGrid tetris.active tetris.curSpot)
 
 
 arrayAdd : Array.Array Int -> Array.Array Int -> Array.Array Int
@@ -60,7 +70,7 @@ divRow row =
             (\n ->
                 div
                     [ class
-                        (if n == 1 then
+                        (if n > 0 then
                             "block"
                          else
                             "space"
@@ -104,5 +114,76 @@ gridGet x y g =
             1
 
 
-gridSet x y v grid =
+isLegal : ( Int, Int ) -> Bool
+isLegal ( x, y ) =
+    (x >= 0 && y >= 0 && x < boardCols && y < boardRows)
+
+
+gridSet : ( Int, Int ) -> a -> Array.Array a -> Array.Array a
+gridSet ( x, y ) v grid =
     Array.set (y * boardCols + x) v grid
+
+
+movedSpots : ( Int, Int ) -> List ( Int, Int ) -> List ( Int, Int )
+movedSpots ( dx, dy ) =
+    List.map (\( x, y ) -> ( x + dx, y + dy ))
+
+
+spotsLeft =
+    movedSpots ( -1, 0 )
+
+
+pointAdd ( x1, y1 ) ( x2, y2 ) =
+    ( (x1 + x2), (y1 + y2) )
+
+
+allPosToOne : Int -> Int
+allPosToOne n =
+    if n > 0 then
+        1
+    else
+        0
+
+
+arrayAll : (a -> Bool) -> Array.Array a -> Bool
+arrayAll predicate arr =
+    List.all predicate (Array.toList arr)
+
+
+spotsClear : Array.Array Int -> List ( Int, Int ) -> Bool
+spotsClear grid spots =
+    arrayAll ((>) 2) (arrayAdd (Array.map allPosToOne grid) (spotsOnGrid 1 spots))
+
+
+
+-- playing tetris
+
+
+pieceMove : ( Int, Int ) -> TetrisState -> TetrisState
+pieceMove ( dx, dy ) tetris =
+    let
+        newSpots =
+            movedSpots ( dx, dy ) (pieceSpots tetris.active tetris.curSpot)
+    in
+        if ((List.all isLegal newSpots) && (spotsClear tetris.dead newSpots)) then
+            { tetris | curSpot = pointAdd tetris.curSpot ( dx, dy ) }
+        else if dy /= 0 then
+            let
+                newGrid =
+                    tetrisGrid tetris
+            in
+                { tetris | dead = newGrid, active = newPiece 1, curSpot = ( 4, 10 ) }
+        else
+            tetris
+
+
+tetrisDown =
+    pieceMove ( 0, -1 )
+
+
+tetrisLeft =
+    pieceMove ( -1, 0 )
+
+
+tetrisRight =
+    pieceMove ( 1, 0 )

@@ -8,7 +8,7 @@ import Char
 import Time
 import StoryView exposing (storyView, tetrisBlocksWithWalls)
 import Entity exposing (..)
-import Tetris exposing (divGrid, exampleTetrisState, TetrisState, spots)
+import Tetris exposing (divGrid, exampleTetrisState, TetrisState, tetrisGrid, tetrisLeft, tetrisRight, tetrisDown)
 import Keyboard
 
 
@@ -78,7 +78,7 @@ js path =
 
 
 tetrisView tetris =
-    div [ class "board" ] (divGrid (spots tetris))
+    div [ class "board" ] (divGrid (tetrisGrid tetris))
 
 
 
@@ -158,7 +158,7 @@ blockUpdate : TetrisState -> Collidable (Movable (Standable a)) -> Collidable (M
 blockUpdate tetris entity =
     let
         blocks =
-            tetrisBlocksWithWalls (spots tetris)
+            tetrisBlocksWithWalls (tetrisGrid tetris)
 
         collision =
             wallCollision blocks entity
@@ -198,8 +198,22 @@ update msg model =
 
                                 _ ->
                                     keysDown
+
+                        newTetris =
+                            case Char.fromCode code of
+                                'J' ->
+                                    tetrisLeft model.tetris
+
+                                'L' ->
+                                    tetrisRight model.tetris
+
+                                'K' ->
+                                    tetrisDown model.tetris
+
+                                _ ->
+                                    model.tetris
                     in
-                        { model | keysDown = newKeysDown }
+                        { model | keysDown = newKeysDown, tetris = newTetris }
 
                 KeyUpMsg code ->
                     let
