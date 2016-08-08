@@ -1,9 +1,9 @@
 
-index.html: Main.elm
+index.html: *.elm
 	elm make Main.elm --output=index.html
 	sed -i '' 's_http://localhost:8080/_/_g' index.html
 
-deploy: index.html imgs
+deploy: index.html imgs script.js style.css
 	rsync -r index.html style.css script.js imgs tom:/home/tomb/elmgame
 
 #deploy should be updated to make changes to the html
