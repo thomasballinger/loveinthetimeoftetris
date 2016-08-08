@@ -248,12 +248,15 @@ update msg model =
                                 | player =
                                     model.player
                                         |> slowedPlayer 0.5
-                                        |> keypressedPlayer model.keysDown 0.5
-                                        |> step 0.5
                                         |> gravity 0.5
                                         |> resetGround
                                         |> blockUpdate model.tetris
+                                        |> keypressedPlayer model.keysDown 0.5
+                                        |> step 0.5
                             }
+
+        -- onGround will be set in blockUpdate
+        -- blockupate has most priority over step params
     in
         ( newModel, Cmd.none )
 

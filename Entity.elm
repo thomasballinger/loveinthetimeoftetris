@@ -211,8 +211,9 @@ smallestCollision e w =
 wallAlter : Collidable (Movable a) -> PossibleCollision -> Collidable (Movable a)
 wallAlter entity collision =
     case collision of
+        --TODO this should be the dy of the thing collided with
         Collision Floor n ->
-            { entity | dy = -1, y = entity.y + n, onGround = True }
+            { entity | dy = -0.001, y = entity.y + n, onGround = True }
 
         Collision Ceiling n ->
             { entity | dy = min 0 entity.dy, y = entity.y - n }
