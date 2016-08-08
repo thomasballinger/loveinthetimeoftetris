@@ -159,11 +159,8 @@ blockUpdate tetris entity =
     let
         blocks =
             tetrisBlocksWithWalls (tetrisGrid tetris)
-
-        collision =
-            wallCollision blocks entity
     in
-        wallAlter entity collision
+        doCollisions blocks entity
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -254,15 +251,12 @@ update msg model =
                                         |> keypressedPlayer model.keysDown 0.5
                                         |> step 0.5
                                         |> gravity 0.5
+                                        |> resetGround
                                         |> blockUpdate model.tetris
-                                        |> notOnGroundIfDy
                             }
     in
         ( newModel, Cmd.none )
 
 
-notOnGroundIfDy entity =
-    if entity.dy == 0 then
-        entity
-    else
-        { entity | onGround = False }
+resetGround e =
+    { e | onGround = False }

@@ -114,8 +114,16 @@ type PossibleCollision
 --- TODO: To choose which collision to report, find the dimension that overlaps most!
 
 
-wallCollide : Collidable (Standable b) -> Collidable a -> PossibleCollision
-wallCollide e w =
+collisionIf : CollisionType -> Float -> PossibleCollision
+collisionIf direction overlap =
+    if overlap > 0 then
+        Collision direction overlap
+    else
+        NoCollision
+
+
+smallestCollision : Collidable (Standable b) -> Collidable a -> PossibleCollision
+smallestCollision e w =
     let
         left1 =
             e.x - e.w / 2
@@ -141,36 +149,79 @@ wallCollide e w =
         top2 =
             w.y + w.h / 2
 
+        bottomDist =
+            collisionIf Floor (top2 - bottom1)
+
+        topDist =
+            collisionIf Ceiling (top1 - bottom2)
+
+        leftDist =
+            collisionIf LeftWall (right2 - left1)
+
+        rightDist =
+            collisionIf RightWall (right1 - left2)
+
         touching =
             not
-                ((left2 > right1)
-                    || (right2 < left1)
-                    || (top2 < bottom1)
-                    || (bottom2 > top1)
+                ((left2 >= right1)
+                    || (right2 <= left1)
+                    || (top2 <= bottom1)
+                    || (bottom2 >= top1)
                 )
     in
-        case touching of
-            True ->
-                (Collision Floor 0)
+        if touching then
+            let
+                collisions =
+                    List.sortBy
+                        (\x ->
+                            case x of
+                                Collision _ amount ->
+                                    amount
 
-            False ->
-                NoCollision
+                                NoCollision ->
+                                    0
+                        )
+                        (List.filter
+                            (\x ->
+                                case x of
+                                    Collision _ amount ->
+                                        amount > 0
+
+                                    NoCollision ->
+                                        False
+                            )
+                            [ bottomDist, topDist, leftDist, rightDist ]
+                        )
+            in
+                case List.head collisions of
+                    Nothing ->
+                        NoCollision
+
+                    Just c ->
+                        c
+        else
+            NoCollision
+
+
+
+-- Collision strategy:
+-- Repeatedly find smallest collision, correct for it, then get next collision
 
 
 wallAlter : Collidable (Movable a) -> PossibleCollision -> Collidable (Movable a)
 wallAlter entity collision =
     case collision of
         Collision Floor n ->
-            { entity | dy = 0, onGround = True }
+            { entity | dy = -1, y = entity.y + n, onGround = True }
 
         Collision Ceiling n ->
-            { entity | dy = 0 }
+            { entity | dy = 0, y = entity.y - n }
 
         Collision LeftWall n ->
-            { entity | dx = 0, x = entity.x + n + 1 }
+            { entity | dx = 0, x = entity.x + n }
 
         Collision RightWall n ->
-            { entity | dx = 0, x = entity.x - n - 1 }
+            { entity | dx = 0, x = entity.x - n }
 
         _ ->
             entity
@@ -183,12 +234,30 @@ wallCollision walls entity =
             NoCollision
 
         wall :: rest ->
-            case wallCollide entity wall of
+            case smallestCollision entity wall of
                 NoCollision ->
                     wallCollision rest entity
 
                 collision ->
                     collision
+
+
+doCollisions : List (Collidable a) -> Collidable (Standable (Movable b)) -> Collidable (Standable (Movable b))
+doCollisions walls entity =
+    let
+        first =
+            wallCollision walls entity
+
+        e2 =
+            wallAlter entity first
+
+        second =
+            wallCollision walls e2
+
+        e3 =
+            wallAlter e2 second
+    in
+        e3
 
 
 
