@@ -255,6 +255,14 @@ update msg model =
                                         |> step 0.5
                                         |> gravity 0.5
                                         |> blockUpdate model.tetris
+                                        |> notOnGroundIfDy
                             }
     in
         ( newModel, Cmd.none )
+
+
+notOnGroundIfDy entity =
+    if entity.dy == 0 then
+        entity
+    else
+        { entity | onGround = False }
