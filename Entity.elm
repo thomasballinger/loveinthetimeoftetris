@@ -215,7 +215,7 @@ wallAlter entity collision =
             { entity | dy = -1, y = entity.y + n, onGround = True }
 
         Collision Ceiling n ->
-            { entity | dy = 0, y = entity.y - n }
+            { entity | dy = min 0 entity.dy, y = entity.y - n }
 
         Collision LeftWall n ->
             { entity | dx = 0, x = entity.x + n }
