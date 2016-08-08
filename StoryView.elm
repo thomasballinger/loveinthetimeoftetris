@@ -4,7 +4,7 @@ import Collage exposing (Form, collage, toForm, rect, filled, move, scale)
 import Element exposing (show, Element, image)
 import Text
 import Color exposing (Color, rgb)
-import Tetris exposing (onSpots, boardCols, boardRows, TetrisState)
+import Tetris exposing (onSpots, boardCols, boardRows, TetrisState, spots)
 import Entity exposing (Drawable, Directional(..), EntityState(..), drawInfoColor)
 
 
@@ -23,7 +23,7 @@ storyView world =
 
 displayBlocks : TetrisState -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool }
 displayBlocks tetris =
-    tetrisBlocks tetris
+    tetrisBlocks (spots tetris)
         |> List.map (xywhToDrawable (rgb 0 200 0))
 
 

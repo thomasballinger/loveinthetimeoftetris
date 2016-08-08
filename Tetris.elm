@@ -1,14 +1,53 @@
-module Tetris exposing (divGrid, exampleBoard, onSpots, boardRows, boardCols, TetrisState)
+module Tetris exposing (divGrid, onSpots, boardRows, boardCols, TetrisState, spots, exampleTetrisState)
 
 import Html.Attributes exposing (class)
 import Html exposing (div)
 import Array
 import Util exposing (range)
 import Entity exposing (Collidable)
+import Piece exposing (..)
 
 
 type alias TetrisState =
-    Array.Array Int
+    { dead : Array.Array Int
+    , active : Piece
+    , curSpot : ( Int, Int )
+    , nextSpot : ( Int, Int )
+    , fraction : Float
+    }
+
+
+exampleTetrisState : TetrisState
+exampleTetrisState =
+    (TetrisState initialBoard pieceJ1 ( 4, 2 ) ( 4, 1 ) 0)
+
+
+pieceSpots : Piece -> ( Int, Int ) -> Array.Array Int
+pieceSpots p ( dx, dy ) =
+    List.foldl (\( x, y ) -> gridSet (x + dx) (y + dy) p.texture) initialBoard p.spots
+
+
+spots : TetrisState -> Array.Array Int
+spots tetris =
+    arrayAdd tetris.dead (pieceSpots tetris.active tetris.curSpot)
+
+
+arrayAdd : Array.Array Int -> Array.Array Int -> Array.Array Int
+arrayAdd a1 a2 =
+    Array.indexedMap
+        (\i v ->
+            let
+                other =
+                    case Array.get i a2 of
+                        Nothing ->
+                            0
+
+                        Just num ->
+                            num
+            in
+                v + other
+        )
+        a1
 
 
 divGrid grid =
@@ -67,12 +106,3 @@ gridGet x y g =
 
 gridSet x y v grid =
     Array.set (y * boardCols + x) v grid
-
-
-exampleBoard : Array.Array Int
-exampleBoard =
-    initialBoard
-        |> gridSet 1 2 1
-        |> gridSet 1 3 1
-        |> gridSet 1 4 1
-        |> gridSet 2 4 1

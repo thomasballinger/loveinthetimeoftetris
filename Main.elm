@@ -8,7 +8,7 @@ import Char
 import Time
 import StoryView exposing (storyView, tetrisBlocksWithWalls)
 import Entity exposing (..)
-import Tetris exposing (divGrid, exampleBoard, TetrisState)
+import Tetris exposing (divGrid, exampleTetrisState, TetrisState, spots)
 import Keyboard
 
 
@@ -40,7 +40,7 @@ init =
 
 
 initialWorld =
-    { tetris = exampleBoard
+    { tetris = exampleTetrisState
     , player = initialPlayer 50 13
     , sf = 1
     , lastTick = 0
@@ -78,7 +78,7 @@ js path =
 
 
 tetrisView tetris =
-    div [ class "board" ] (divGrid tetris)
+    div [ class "board" ] (divGrid (spots tetris))
 
 
 
@@ -97,7 +97,7 @@ keypressedPlayer keysDown dt player =
     let
         afterJump =
             if keysDown.w && player.onGround then
-                { player | dy = player.dy + 10, onGround = False }
+                { player | dy = player.dy + 30, onGround = False }
             else
                 player
 
@@ -158,7 +158,7 @@ blockUpdate : TetrisState -> Collidable (Movable (Standable a)) -> Collidable (M
 blockUpdate tetris entity =
     let
         blocks =
-            tetrisBlocksWithWalls tetris
+            tetrisBlocksWithWalls (spots tetris)
 
         collision =
             wallCollision blocks entity
