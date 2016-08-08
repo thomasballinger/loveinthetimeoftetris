@@ -6,9 +6,9 @@ import Html.App as App
 import Html.Events exposing (onClick)
 import Char
 import Time
-import StoryView exposing (storyView, tetrisBlocksWithWalls)
+import StoryView exposing (storyView)
 import Entity exposing (..)
-import Tetris exposing (divGrid, exampleTetrisState, TetrisState, tetrisGrid, tetrisLeft, tetrisRight, tetrisDown)
+import Tetris exposing (divGrid, exampleTetrisState, TetrisState, tetrisGrid, tetrisLeft, tetrisRight, tetrisDown, tetrisBlocksWithWalls, moveWorks, pointAdd)
 import Keyboard
 
 
@@ -41,7 +41,7 @@ init =
 
 initialWorld =
     { tetris = exampleTetrisState
-    , player = initialPlayer 50 13
+    , player = initialPlayer 50 100
     , sf = 1
     , lastTick = 0
     , keysDown = { w = False, a = False, s = False, d = False }
@@ -158,7 +158,7 @@ blockUpdate : TetrisState -> Collidable (Movable (Standable a)) -> Collidable (M
 blockUpdate tetris entity =
     let
         blocks =
-            tetrisBlocksWithWalls (tetrisGrid tetris)
+            tetrisBlocksWithWalls tetris
     in
         doCollisions blocks entity
 
@@ -254,6 +254,7 @@ update msg model =
                                         |> keypressedPlayer model.keysDown 0.5
                                         |> step 0.5
                             }
+                                |> modelPlayTetris 0.5
 
         -- onGround will be set in blockUpdate
         -- blockupate has most priority over step params
@@ -263,3 +264,23 @@ update msg model =
 
 resetGround e =
     { e | onGround = False }
+
+
+modelPlayTetris : Float -> Model -> Model
+modelPlayTetris dt model =
+    { model | tetris = playTetris dt model.tetris }
+
+
+playTetris : Float -> TetrisState -> TetrisState
+playTetris dt tetris =
+    let
+        newFraction =
+            tetris.fraction + dt * 0.01
+    in
+        if newFraction > 1 then
+            if moveWorks ( 0, -2 ) tetris then
+                { tetris | fraction = 0, curSpot = tetris.nextSpot, nextSpot = pointAdd tetris.curSpot ( 0, -2 ) }
+            else
+                tetrisDown tetris
+        else
+            { tetris | fraction = newFraction }

@@ -1,10 +1,10 @@
-module StoryView exposing (storyView, tetrisBlocksWithWalls)
+module StoryView exposing (storyView)
 
 import Collage exposing (Form, collage, toForm, rect, filled, move, scale)
 import Element exposing (show, Element, image)
 import Text
 import Color exposing (Color, rgb)
-import Tetris exposing (onSpots, boardCols, boardRows, TetrisState, tetrisGrid)
+import Tetris exposing (TetrisState, displayBlocks, displayWalls, walls)
 import Entity exposing (Drawable, Directional(..), EntityState(..), drawInfoColor)
 
 
@@ -19,52 +19,6 @@ storyView world =
                 ++ (List.map (draw ( world.sf, world.player.x, world.player.y )) (displayWalls walls))
             )
         )
-
-
-displayBlocks : TetrisState -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool }
-displayBlocks tetris =
-    tetrisBlocks (tetrisGrid tetris)
-        |> List.map (xywhToDrawable (rgb 0 200 0))
-
-
-displayWalls : List { x : Float, y : Float, w : Float, h : Float } -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool }
-displayWalls walls =
-    List.map (xywhToDrawable (rgb 100 0 0)) walls
-
-
-xywhToDrawable : Color -> { x : Float, y : Float, w : Float, h : Float } -> { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool }
-xywhToDrawable color { x, y, w, h } =
-    { x = x
-    , y = y
-    , drawinfo = drawInfoColor color w h
-    , dir = Neither
-    , state = Standing
-    , onGround = True
-    }
-
-
-tetrisBlocks tetris =
-    tetris
-        |> onSpots
-        |> List.map (\( x, y ) -> { x = toFloat x * 100 - 50, y = toFloat y * 100 - 50, w = 100.0, h = 100.0 })
-
-
-tetrisBlocksWithWalls tetris =
-    (tetrisBlocks tetris) ++ walls
-
-
-walls =
-    [ { x = (boardCols / 2) * 100
-      , y = toFloat -150
-      , w = toFloat (100 * (boardCols + 2))
-      , h = toFloat 100
-      }
-    , { x = (boardCols / 2) * 100
-      , y = toFloat (boardRows * 100) + 50
-      , w = toFloat (100 * (boardCols + 2))
-      , h = toFloat 100
-      }
-    ]
 
 
 drawSolid : ( Float, Float, Float, Float ) -> Color -> Form

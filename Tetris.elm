@@ -1,10 +1,11 @@
-module Tetris exposing (divGrid, onSpots, boardRows, boardCols, TetrisState, tetrisGrid, exampleTetrisState, tetrisRight, tetrisLeft, tetrisDown)
+module Tetris exposing (divGrid, boardRows, boardCols, TetrisState, tetrisGrid, exampleTetrisState, tetrisRight, tetrisLeft, tetrisDown, displayBlocks, displayWalls, walls, tetrisBlocksWithWalls, moveWorks, pointAdd)
 
 import Html.Attributes exposing (class)
 import Html exposing (div)
 import Array
 import Util exposing (range)
-import Entity exposing (Collidable)
+import Color exposing (Color, rgb)
+import Entity exposing (Collidable, Drawable, EntityState(..), Directional(..), drawInfoColor)
 import Piece exposing (..)
 
 
@@ -95,6 +96,7 @@ boardRows =
     22
 
 
+onSpots : Array.Array Int -> List ( Int, Int )
 onSpots grid =
     Array.toIndexedList grid
         |> List.filter (\( i, x ) -> x > 0)
@@ -137,6 +139,13 @@ pointAdd ( x1, y1 ) ( x2, y2 ) =
     ( (x1 + x2), (y1 + y2) )
 
 
+pointPropAdd : Float -> ( Int, Int ) -> ( Int, Int ) -> ( Float, Float )
+pointPropAdd portion ( x1, y1 ) ( x2, y2 ) =
+    ( ((toFloat x1) * (1.0 - portion) + ((toFloat x2) * portion))
+    , ((toFloat y1) * (1.0 - portion) + ((toFloat y2) * portion))
+    )
+
+
 allPosToOne : Int -> Int
 allPosToOne n =
     if n > 0 then
@@ -161,20 +170,25 @@ spotsClear grid spots =
 
 pieceMove : ( Int, Int ) -> TetrisState -> TetrisState
 pieceMove ( dx, dy ) tetris =
+    if moveWorks ( dx, dy ) tetris then
+        { tetris | curSpot = pointAdd tetris.curSpot ( dx, dy ), fraction = 0 }
+    else if dy /= 0 then
+        let
+            newGrid =
+                tetrisGrid tetris
+        in
+            { tetris | dead = newGrid, active = newPiece 1, curSpot = ( 4, 10 ), fraction = 0 }
+    else
+        tetris
+
+
+moveWorks : ( Int, Int ) -> TetrisState -> Bool
+moveWorks ( dx, dy ) tetris =
     let
         newSpots =
             movedSpots ( dx, dy ) (pieceSpots tetris.active tetris.curSpot)
     in
-        if ((List.all isLegal newSpots) && (spotsClear tetris.dead newSpots)) then
-            { tetris | curSpot = pointAdd tetris.curSpot ( dx, dy ) }
-        else if dy /= 0 then
-            let
-                newGrid =
-                    tetrisGrid tetris
-            in
-                { tetris | dead = newGrid, active = newPiece 1, curSpot = ( 4, 10 ) }
-        else
-            tetris
+        (List.all isLegal newSpots) && (spotsClear tetris.dead newSpots)
 
 
 tetrisDown =
@@ -187,3 +201,80 @@ tetrisLeft =
 
 tetrisRight =
     pieceMove ( 1, 0 )
+
+
+
+-- tetris blocks: transform to play space
+
+
+walls =
+    [ { x = (boardCols / 2) * 100 - 50
+      , y = toFloat -150
+      , w = toFloat (100 * (boardCols + 1))
+      , h = toFloat 100
+      }
+    , { x = (boardCols / 2) * 100 - 50
+      , y = toFloat (boardRows * 100) + 50
+      , w = toFloat (100 * (boardCols + 1))
+      , h = toFloat 100
+      }
+    , { x = toFloat -150
+      , y = toFloat 100 * (boardRows / 2) - 50
+      , w = toFloat 100
+      , h = toFloat ((boardRows + 3) * 100)
+      }
+    , { x = toFloat (100 * boardCols) - 50
+      , y = toFloat 100 * (boardRows / 2) - 50
+      , w = toFloat 100
+      , h = toFloat ((boardRows + 3) * 100)
+      }
+    ]
+
+
+displayBlocks : TetrisState -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool }
+displayBlocks tetris =
+    tetrisBlocks tetris
+        |> List.map (xywhToDrawable (rgb 0 200 0))
+
+
+displayWalls : List { x : Float, y : Float, w : Float, h : Float } -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool }
+displayWalls walls =
+    List.map (xywhToDrawable (rgb 100 0 0)) walls
+
+
+xywhToDrawable : Color -> { x : Float, y : Float, w : Float, h : Float } -> { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool }
+xywhToDrawable color { x, y, w, h } =
+    { x = x
+    , y = y
+    , drawinfo = drawInfoColor color w h
+    , dir = Neither
+    , state = Standing
+    , onGround = True
+    }
+
+
+toWorldCords : ( Int, Int ) -> { x : Float, y : Float, w : Float, h : Float }
+toWorldCords ( x, y ) =
+    { x = toFloat x * 100 - 50, y = toFloat y * 100 - 50, w = 100.0, h = 100.0 }
+
+
+floatToWorldCords : ( Float, Float ) -> { x : Float, y : Float, w : Float, h : Float }
+floatToWorldCords ( x, y ) =
+    { x = x * 100 - 50, y = y * 100 - 50, w = 100.0, h = 100.0 }
+
+
+tetrisBlocks tetris =
+    (List.map toWorldCords (onSpots tetris.dead))
+        ++ (List.map floatToWorldCords (interpolatedActive tetris))
+
+
+interpolatedActive tetris =
+    let
+        ( dx, dy ) =
+            pointPropAdd tetris.fraction tetris.curSpot tetris.nextSpot
+    in
+        List.map (\( x, y ) -> ( (toFloat x) + dx, (toFloat y) + dy )) tetris.active.spots
+
+
+tetrisBlocksWithWalls tetris =
+    (tetrisBlocks tetris) ++ walls
