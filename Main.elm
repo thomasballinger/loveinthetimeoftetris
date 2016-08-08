@@ -9,7 +9,9 @@ import Time
 import StoryView exposing (storyView)
 import Entity exposing (..)
 import Tetris exposing (divGrid, exampleTetrisState, TetrisState, tetrisGrid, tetrisLeft, tetrisRight, tetrisDown, tetrisBlocksWithWalls, moveWorks, pointAdd, ticksPerTetrisSquare)
+import Piece exposing (newPiece)
 import Keyboard
+import Random
 
 
 type alias Model =
@@ -91,6 +93,7 @@ type Msg
     | KeyDownMsg Keyboard.KeyCode
     | KeyUpMsg Keyboard.KeyCode
     | Tick Time.Time
+    | NewPiece Int
 
 
 keypressedPlayer keysDown dt player =
@@ -168,6 +171,9 @@ update msg model =
     let
         newModel =
             case msg of
+                NewPiece i ->
+                    { model | tetris = withNewPiece i model.tetris }
+
                 Increment ->
                     { model | sf = model.sf * 1.25 }
 
@@ -254,21 +260,24 @@ update msg model =
                                         |> keypressedPlayer model.keysDown 0.5
                                         |> step 0.5
                             }
-                                |> modelPlayTetris 0.5
 
         -- onGround will be set in blockUpdate
         -- blockupate has most priority over step params
     in
-        ( newModel, Cmd.none )
+        let
+            newTetris =
+                playTetris 0.5 newModel.tetris
+        in
+            ( { newModel | tetris = newTetris }
+            , if newTetris.needsRandom then
+                Random.generate NewPiece (Random.int 1 7)
+              else
+                Cmd.none
+            )
 
 
 resetGround e =
     { e | onGround = False }
-
-
-modelPlayTetris : Float -> Model -> Model
-modelPlayTetris dt model =
-    { model | tetris = playTetris dt model.tetris }
 
 
 playTetris : Float -> TetrisState -> TetrisState
@@ -284,3 +293,8 @@ playTetris dt tetris =
                 tetrisDown tetris
         else
             { tetris | fraction = newFraction }
+
+
+withNewPiece : Int -> TetrisState -> TetrisState
+withNewPiece i tetris =
+    { tetris | needsRandom = False, active = newPiece i }

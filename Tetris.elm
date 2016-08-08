@@ -15,12 +15,13 @@ type alias TetrisState =
     , curSpot : ( Int, Int )
     , nextSpot : ( Int, Int )
     , fraction : Float
+    , needsRandom : Bool
     }
 
 
 exampleTetrisState : TetrisState
 exampleTetrisState =
-    (TetrisState initialBoard pieceJ1 ( 4, 2 ) ( 4, 1 ) 0)
+    (TetrisState initialBoard pieceJ1 ( 4, 2 ) ( 4, 1 ) 0 False)
 
 
 pieceGrid : Piece -> ( Int, Int ) -> Array.Array Int
@@ -177,7 +178,7 @@ pieceMove ( dx, dy ) tetris =
             newGrid =
                 tetrisGrid tetris
         in
-            { tetris | dead = newGrid, active = newPiece 1, curSpot = ( 4, 10 ), fraction = 0 }
+            { tetris | dead = newGrid, active = newPiece 1, curSpot = ( 4, 20 ), nextSpot = ( 4, 19 ), fraction = 0, needsRandom = True }
     else
         tetris
 
@@ -208,7 +209,7 @@ piecePix =
 
 
 ticksPerTetrisSquare =
-    100
+    10
 
 
 
