@@ -8,7 +8,7 @@ import Char
 import Time
 import StoryView exposing (storyView)
 import Entity exposing (..)
-import Tetris exposing (divGrid, exampleTetrisState, TetrisState, tetrisGrid, tetrisLeft, tetrisRight, tetrisDown, tetrisBlocksWithWalls, moveWorks, pointAdd)
+import Tetris exposing (divGrid, exampleTetrisState, TetrisState, tetrisGrid, tetrisLeft, tetrisRight, tetrisDown, tetrisBlocksWithWalls, moveWorks, pointAdd, ticksPerTetrisSquare)
 import Keyboard
 
 
@@ -154,11 +154,11 @@ slowedPlayer dt player =
             { player | dx = player.dx * μ ^ dt }
 
 
-blockUpdate : TetrisState -> Collidable (Movable (Standable a)) -> Collidable (Movable (Standable a))
-blockUpdate tetris entity =
+blockUpdate : Float -> TetrisState -> Collidable (Movable (Standable a)) -> Collidable (Movable (Standable a))
+blockUpdate dt tetris entity =
     let
         blocks =
-            tetrisBlocksWithWalls tetris
+            tetrisBlocksWithWalls dt tetris
     in
         doCollisions blocks entity
 
@@ -250,7 +250,7 @@ update msg model =
                                         |> slowedPlayer 0.5
                                         |> gravity 0.5
                                         |> resetGround
-                                        |> blockUpdate model.tetris
+                                        |> blockUpdate 0.5 model.tetris
                                         |> keypressedPlayer model.keysDown 0.5
                                         |> step 0.5
                             }
@@ -275,7 +275,7 @@ playTetris : Float -> TetrisState -> TetrisState
 playTetris dt tetris =
     let
         newFraction =
-            tetris.fraction + dt * 0.01
+            tetris.fraction + dt * (1 / ticksPerTetrisSquare)
     in
         if newFraction > 1 then
             if moveWorks ( 0, -2 ) tetris then

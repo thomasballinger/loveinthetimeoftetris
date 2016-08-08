@@ -52,7 +52,7 @@ type alias Standable x =
 
 
 type alias Collidable x =
-    { x | w : Float, h : Float, x : Float, y : Float }
+    { x | w : Float, h : Float, x : Float, y : Float, dy : Float, dx : Float }
 
 
 gravity : Float -> Movable a -> Movable a
@@ -107,17 +107,17 @@ type CollisionType
 
 type PossibleCollision
     = NoCollision
-    | Collision CollisionType Float
+    | Collision CollisionType Float ( Float, Float )
 
 
 
 --- TODO: To choose which collision to report, find the dimension that overlaps most!
 
 
-collisionIf : CollisionType -> Float -> PossibleCollision
-collisionIf direction overlap =
+collisionIf : CollisionType -> Float -> ( Float, Float ) -> PossibleCollision
+collisionIf direction overlap velocity =
     if overlap > 0 then
-        Collision direction overlap
+        Collision direction overlap velocity
     else
         NoCollision
 
@@ -150,16 +150,16 @@ smallestCollision e w =
             w.y + w.h / 2
 
         bottomDist =
-            collisionIf Floor (top2 - bottom1)
+            collisionIf Floor (top2 - bottom1) ( w.dx, w.dy )
 
         topDist =
-            collisionIf Ceiling (top1 - bottom2)
+            collisionIf Ceiling (top1 - bottom2) ( w.dx, w.dy )
 
         leftDist =
-            collisionIf LeftWall (right2 - left1)
+            collisionIf LeftWall (right2 - left1) ( w.dx, w.dy )
 
         rightDist =
-            collisionIf RightWall (right1 - left2)
+            collisionIf RightWall (right1 - left2) ( w.dx, w.dy )
 
         touching =
             not
@@ -175,7 +175,7 @@ smallestCollision e w =
                     List.sortBy
                         (\x ->
                             case x of
-                                Collision _ amount ->
+                                Collision _ amount _ ->
                                     amount
 
                                 NoCollision ->
@@ -184,7 +184,7 @@ smallestCollision e w =
                         (List.filter
                             (\x ->
                                 case x of
-                                    Collision _ amount ->
+                                    Collision _ amount _ ->
                                         amount > 0
 
                                     NoCollision ->
@@ -212,17 +212,17 @@ wallAlter : Collidable (Movable a) -> PossibleCollision -> Collidable (Movable a
 wallAlter entity collision =
     case collision of
         --TODO this should be the dy of the thing collided with
-        Collision Floor n ->
-            { entity | dy = -0.001, y = entity.y + n, onGround = True }
+        Collision Floor n ( vx, vy ) ->
+            { entity | dy = (1 * vy) - 0.001, y = entity.y + n, onGround = True }
 
-        Collision Ceiling n ->
+        Collision Ceiling n ( vx, vy ) ->
             { entity | dy = min 0 entity.dy, y = entity.y - n }
 
-        Collision LeftWall n ->
-            { entity | dx = 0, x = entity.x + n }
+        Collision LeftWall n ( vx, vy ) ->
+            { entity | dx = vx, x = entity.x + n }
 
-        Collision RightWall n ->
-            { entity | dx = 0, x = entity.x - n }
+        Collision RightWall n ( vx, vy ) ->
+            { entity | dx = vx, x = entity.x - n }
 
         _ ->
             entity
