@@ -55,7 +55,7 @@ tetrisBlocksWithWalls tetris =
 
 walls =
     [ { x = (boardCols / 2) * 100
-      , y = toFloat -50
+      , y = toFloat -150
       , w = toFloat (100 * (boardCols + 2))
       , h = toFloat 100
       }
