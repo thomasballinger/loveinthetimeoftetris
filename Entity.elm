@@ -73,7 +73,7 @@ collide e1 e2 =
     False
 
 
-initialPlayer x y =
+initialPlayer ( x, y ) =
     { x = x
     , y = y
     , drawinfo =

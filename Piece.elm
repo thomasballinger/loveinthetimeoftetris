@@ -1,5 +1,7 @@
 module Piece exposing (..)
 
+import List
+
 
 type alias Piece =
     { spots : List ( Int, Int )
@@ -157,3 +159,35 @@ newPiece rn =
 
         _ ->
             Debug.crash "no dependent types in Elm"
+
+
+rotations : Piece -> List Piece
+rotations tetris =
+    rotations' [ tetris ]
+
+
+rotations' : List Piece -> List Piece
+rotations' states =
+    case states of
+        first :: rest ->
+            let
+                last =
+                    case
+                        List.head (List.reverse rest)
+                    of
+                        Just state ->
+                            state
+
+                        Nothing ->
+                            first
+
+                next =
+                    rotate first
+            in
+                if first == last then
+                    states
+                else
+                    rotations' (next :: states)
+
+        [] ->
+            states

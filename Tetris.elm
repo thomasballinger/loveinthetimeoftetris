@@ -258,7 +258,7 @@ displayBlocks tetris =
         |> List.map (xywhToDrawable (rgb 0 200 0))
 
 
-displayWalls : List { x : Float, y : Float, w : Float, h : Float } -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool }
+displayWalls : List { x : Float, y : Float, w : Float, h : Float, dx : Float, dy : Float } -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool }
 displayWalls walls =
     List.map (xywhToDrawable (rgb 100 0 0)) walls
 

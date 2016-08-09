@@ -8,13 +8,15 @@ import Tetris exposing (TetrisState, displayBlocks, displayWalls, walls)
 import Entity exposing (Drawable, Directional(..), EntityState(..), drawInfoColor)
 
 
+entities world =
+    [ world.player ] ++ world.others
+
+
 storyView world =
     Element.toHtml
         (collage 400
             400
-            ([ -- Collage.text (Text.fromString (toString world)),
-               draw ( world.sf, world.player.x, world.player.y ) world.player
-             ]
+            ((List.map (draw ( world.sf, world.player.x, world.player.y )) (entities world))
                 ++ (List.map (draw ( world.sf, world.player.x, world.player.y )) (displayBlocks world.tetris))
                 ++ (List.map (draw ( world.sf, world.player.x, world.player.y )) (displayWalls walls))
             )

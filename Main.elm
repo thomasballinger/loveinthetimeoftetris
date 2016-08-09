@@ -8,6 +8,7 @@ import Char
 import Time
 import StoryView exposing (storyView)
 import Entity exposing (..)
+import Others exposing (..)
 import Tetris exposing (divGrid, exampleTetrisState, TetrisState, tetrisGrid, tetrisLeft, tetrisRight, tetrisDown, tetrisBlocksWithWalls, moveWorks, pointAdd, ticksPerTetrisSquare)
 import Piece exposing (newPiece)
 import TetrisAI exposing (desiredX)
@@ -18,10 +19,15 @@ import Random
 type alias Model =
     { tetris : TetrisState
     , player : Movable (Standable (Collidable (Drawable {})))
+    , others : List (Movable (Standable (Collidable (Drawable {}))))
     , sf : Float
     , lastTick : Time.Time
     , keysDown : KeysDown
     }
+
+
+entities model =
+    [ model.player ] ++ model.others
 
 
 type alias KeysDown =
@@ -44,7 +50,8 @@ init =
 
 initialWorld =
     { tetris = exampleTetrisState
-    , player = initialPlayer 50 100
+    , player = initialPlayer ( 50, 100 )
+    , others = [ princess ( 100, 100 ) ]
     , sf = 1
     , lastTick = 0
     , keysDown = { w = False, a = False, s = False, d = False }
@@ -271,6 +278,17 @@ update msg model =
                                         |> blockUpdate 0.5 model.tetris
                                         |> keypressedPlayer model.keysDown 0.5
                                         |> step 0.5
+                                , others =
+                                    List.map
+                                        (\e ->
+                                            e
+                                                |> slowedPlayer 0.5
+                                                |> gravity 0.5
+                                                |> resetGround
+                                                |> blockUpdate 0.5 model.tetris
+                                                |> step 0.5
+                                        )
+                                        model.others
                             }
 
         -- onGround will be set in blockUpdate
