@@ -172,7 +172,11 @@ spotsClear grid spots =
 pieceMove : ( Int, Int ) -> TetrisState -> TetrisState
 pieceMove ( dx, dy ) tetris =
     if moveWorks ( dx, dy ) tetris then
-        { tetris | curSpot = pointAdd tetris.curSpot ( dx, dy ), fraction = 0 }
+        let
+            newSpot =
+                pointAdd tetris.curSpot ( dx, dy )
+        in
+            { tetris | curSpot = newSpot, nextSpot = newSpot, fraction = 0 }
     else if dy /= 0 then
         let
             newGrid =

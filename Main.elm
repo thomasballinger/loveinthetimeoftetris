@@ -289,7 +289,7 @@ playTetris dt tetris =
     in
         if newFraction > 1 then
             if moveWorks ( 0, -2 ) tetris then
-                { tetris | fraction = 0, curSpot = tetris.nextSpot, nextSpot = pointAdd tetris.curSpot ( 0, -2 ) }
+                { tetris | fraction = 0, curSpot = tetris.nextSpot, nextSpot = pointAdd tetris.nextSpot ( 0, -1 ) }
             else
                 tetrisDown tetris
         else
