@@ -63,7 +63,7 @@ arrayAdd a1 a2 =
 
 
 divGrid grid =
-    List.map divRow (rows grid)
+    List.map divRow (List.reverse (rows grid))
 
 
 divRow row =
