@@ -216,8 +216,19 @@ update msg model =
 
                                 _ ->
                                     model.tetris
+
+                        newZoom =
+                            case code of
+                                189 ->
+                                    model.sf * 0.8
+
+                                187 ->
+                                    model.sf * 1.25
+
+                                _ ->
+                                    model.sf
                     in
-                        { model | keysDown = newKeysDown, tetris = newTetris }
+                        { model | keysDown = newKeysDown, tetris = newTetris, sf = newZoom }
 
                 KeyUpMsg code ->
                     let
