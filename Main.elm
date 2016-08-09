@@ -10,6 +10,7 @@ import StoryView exposing (storyView)
 import Entity exposing (..)
 import Tetris exposing (divGrid, exampleTetrisState, TetrisState, tetrisGrid, tetrisLeft, tetrisRight, tetrisDown, tetrisBlocksWithWalls, moveWorks, pointAdd, ticksPerTetrisSquare)
 import Piece exposing (newPiece)
+import TetrisAI exposing (desiredX)
 import Keyboard
 import Random
 
@@ -172,7 +173,7 @@ update msg model =
         newModel =
             case msg of
                 NewPiece i ->
-                    { model | tetris = withNewPiece i model.tetris }
+                    { model | tetris = (withNewPiece i model.tetris) }
 
                 Increment ->
                     { model | sf = model.sf * 1.25 }
@@ -297,4 +298,11 @@ playTetris dt tetris =
 
 withNewPiece : Int -> TetrisState -> TetrisState
 withNewPiece i tetris =
-    { tetris | needsRandom = False, active = newPiece i }
+    let
+        withPiece =
+            { tetris | needsRandom = False, active = newPiece i }
+
+        x =
+            desiredX withPiece
+    in
+        { withPiece | curSpot = ( x, 19 ), nextSpot = ( x, 18 ) }
