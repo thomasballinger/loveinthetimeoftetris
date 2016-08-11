@@ -328,10 +328,13 @@ playTetris dt tetris =
 withNewPiece : Int -> TetrisState -> TetrisState
 withNewPiece i tetris =
     let
+        thing =
+            Debug.log "calling withNewPiece"
+
         withPiece =
             { tetris | needsRandom = False, active = newPiece i }
 
         x =
-            desiredX withPiece
+            Debug.log "Desired x" (desiredX withPiece)
     in
         { withPiece | curSpot = ( x, 19 ), nextSpot = ( x, 18 ) }

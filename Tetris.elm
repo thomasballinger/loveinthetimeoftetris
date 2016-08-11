@@ -1,4 +1,4 @@
-module Tetris exposing (divGrid, boardRows, boardCols, TetrisState, tetrisGrid, exampleTetrisState, tetrisRight, tetrisLeft, tetrisDown, displayBlocks, displayWalls, walls, tetrisBlocksWithWalls, moveWorks, pointAdd, ticksPerTetrisSquare)
+module Tetris exposing (divGrid, boardRows, boardCols, TetrisState, tetrisGrid, exampleTetrisState, tetrisRight, tetrisLeft, tetrisDown, displayBlocks, displayWalls, walls, tetrisBlocksWithWalls, moveWorks, pointAdd, ticksPerTetrisSquare, onSpots, gridGet, smallestY, initialBoard)
 
 import Html.Attributes exposing (class)
 import Html exposing (div)
@@ -84,6 +84,7 @@ divRow row =
         )
 
 
+rows : Array.Array Int -> List (List Int)
 rows grid =
     List.map (\i -> Array.toList (Array.slice (i * boardCols) ((i + 1) * boardCols) grid))
         (range boardRows)
@@ -119,7 +120,7 @@ gridGet x y g =
 
 isLegal : ( Int, Int ) -> Bool
 isLegal ( x, y ) =
-    (x >= 0 && y >= 0 && x < boardCols && y < boardRows)
+    (x >= 0 && y >= 0 && x < boardCols)
 
 
 gridSet : ( Int, Int ) -> a -> Array.Array a -> Array.Array a
@@ -185,6 +186,26 @@ pieceMove ( dx, dy ) tetris =
             { tetris | dead = newGrid, active = newPiece 1, curSpot = ( 4, 20 ), nextSpot = ( 4, 19 ), fraction = 0, needsRandom = True }
     else
         tetris
+
+
+smallestY : TetrisState -> Maybe Int
+smallestY tetris =
+    if moveWorks ( 0, 0 ) tetris then
+        Just (smallestY' tetris 0)
+    else
+        Nothing
+
+
+smallestY' : TetrisState -> Int -> Int
+smallestY' tetris dy =
+    if moveWorks ( 0, dy - 1 ) tetris then
+        smallestY' tetris (dy - 1)
+    else
+        let
+            ( x, y ) =
+                tetris.curSpot
+        in
+            y + dy
 
 
 moveWorks : ( Int, Int ) -> TetrisState -> Bool

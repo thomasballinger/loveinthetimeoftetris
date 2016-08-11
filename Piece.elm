@@ -162,8 +162,11 @@ newPiece rn =
 
 
 rotations : Piece -> List Piece
-rotations tetris =
-    rotations' [ tetris ]
+rotations piece =
+    if piece == pieceO then
+        [ pieceO ]
+    else
+        rotations' [ piece ]
 
 
 rotations' : List Piece -> List Piece
@@ -184,7 +187,7 @@ rotations' states =
                 next =
                     rotate first
             in
-                if first == last then
+                if (next == last) && (List.length states > 1) then
                     states
                 else
                     rotations' (next :: states)
