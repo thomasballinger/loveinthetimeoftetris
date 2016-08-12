@@ -21,13 +21,13 @@ type alias Model =
     , player : Movable (Standable (Collidable (Drawable {})))
     , others : List (Movable (Standable (Collidable (Drawable {}))))
     , sf : Float
+    , targetSF : Float
+    , tetrisSpeed : Float
+    , targetTetrisSpeed : Float
+    , jumpSize : Float
     , lastTick : Time.Time
     , keysDown : KeysDown
     }
-
-
-entities model =
-    [ model.player ] ++ model.others
 
 
 type alias KeysDown =
@@ -52,7 +52,11 @@ initialWorld =
     { tetris = exampleTetrisState
     , player = initialPlayer ( 50, 100 )
     , others = [ princess ( 100, 100 ) ]
-    , sf = 1
+    , sf = 2
+    , targetSF = 1
+    , tetrisSpeed = 1
+    , targetTetrisSpeed = 2
+    , jumpSize = 20
     , lastTick = 0
     , keysDown = { w = False, a = False, s = False, d = False }
     }
@@ -104,11 +108,11 @@ type Msg
     | NewPiece Int
 
 
-keypressedPlayer keysDown dt player =
+keypressedPlayer keysDown dt jumpSize player =
     let
         afterJump =
             if keysDown.w && player.onGround then
-                { player | dy = player.dy + 30, onGround = False }
+                { player | dy = player.dy + jumpSize, onGround = False }
             else
                 player
 
@@ -276,7 +280,7 @@ update msg model =
                                         |> gravity 0.5
                                         |> resetGround
                                         |> blockUpdate 0.5 model.tetris
-                                        |> keypressedPlayer model.keysDown 0.5
+                                        |> keypressedPlayer model.keysDown 0.5 model.jumpSize
                                         |> step 0.5
                                 , others =
                                     List.map
@@ -296,9 +300,15 @@ update msg model =
     in
         let
             newTetris =
-                playTetris 0.5 newModel.tetris
+                playTetris (0.5 * newModel.tetrisSpeed) newModel.tetris
+
+            newerModel =
+                { newModel
+                    | sf = ((newModel.sf * 999) + (newModel.targetSF * 1)) / 1000
+                    , tetrisSpeed = ((newModel.tetrisSpeed * 999) + (newModel.targetTetrisSpeed * 1)) / 1000
+                }
         in
-            ( { newModel | tetris = newTetris }
+            ( { newerModel | tetris = newTetris }
             , if newTetris.needsRandom then
                 Random.generate NewPiece (Random.int 1 7)
               else
@@ -335,6 +345,7 @@ withNewPiece i tetris =
             { tetris | needsRandom = False, active = newPiece i }
 
         ( x, rot ) =
-            Debug.log "Desired xAndRot" (desiredXAndRot withPiece)
+            --Debug.log "Desired xAndRot"
+            (desiredXAndRot withPiece)
     in
         { withPiece | curSpot = ( x, 19 ), nextSpot = ( x, 18 ), active = rot }

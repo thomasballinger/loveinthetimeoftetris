@@ -25,4 +25,5 @@ princess ( x, y ) =
     , state = Standing
     , onGround = True
     , dir = Left
+    , squish = 0
     }

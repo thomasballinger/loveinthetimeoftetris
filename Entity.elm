@@ -15,7 +15,7 @@ type Directional
 
 
 type alias Drawable x =
-    { x | x : Float, y : Float, drawinfo : DrawInfo, dir : Directional, state : EntityState, onGround : Bool }
+    { x | x : Float, y : Float, drawinfo : DrawInfo, dir : Directional, state : EntityState, onGround : Bool, squish : Float }
 
 
 type alias DrawInfo =
@@ -95,6 +95,7 @@ initialPlayer ( x, y ) =
     , state = Standing
     , onGround = True
     , dir = Left
+    , squish = 0
     }
 
 

@@ -258,7 +258,7 @@ piecePix =
 
 
 ticksPerTetrisSquare =
-    1
+    40
 
 
 
@@ -297,18 +297,18 @@ walls =
     ]
 
 
-displayBlocks : TetrisState -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool }
+displayBlocks : TetrisState -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool, squish : Float }
 displayBlocks tetris =
     tetrisBlocks 0 tetris
         |> List.map (xywhToDrawable (rgb 0 200 0))
 
 
-displayWalls : List { x : Float, y : Float, w : Float, h : Float, dx : Float, dy : Float } -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool }
+displayWalls : List { x : Float, y : Float, w : Float, h : Float, dx : Float, dy : Float } -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool, squish : Float }
 displayWalls walls =
     List.map (xywhToDrawable (rgb 100 0 0)) walls
 
 
-xywhToDrawable : Color -> { a | x : Float, y : Float, w : Float, h : Float } -> { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool }
+xywhToDrawable : Color -> { a | x : Float, y : Float, w : Float, h : Float } -> { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool, squish : Float }
 xywhToDrawable color { x, y, w, h } =
     { x = x
     , y = y
@@ -316,6 +316,7 @@ xywhToDrawable color { x, y, w, h } =
     , dir = Neither
     , state = Standing
     , onGround = True
+    , squish = 0.0
     }
 
 
