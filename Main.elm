@@ -9,11 +9,16 @@ import Time
 import StoryView exposing (storyView)
 import Entity exposing (..)
 import Others exposing (..)
-import Tetris exposing (divGrid, exampleTetrisState, TetrisState, tetrisGrid, tetrisLeft, tetrisRight, tetrisDown, tetrisBlocksWithWalls, moveWorks, pointAdd, ticksPerTetrisSquare)
+import Tetris exposing (divGrid, exampleTetrisState, TetrisState, tetrisGrid, tetrisLeft, tetrisRight, tetrisDown, tetrisRotateLeft, tetrisRotateRight, tetrisBlocksWithWalls, moveWorks, pointAdd)
 import Piece exposing (newPiece)
 import TetrisAI exposing (desiredXAndRot)
 import Keyboard
 import Random
+
+
+ticks : Float -> Int
+ticks speed =
+    round (1 / speed)
 
 
 type alias Model =
@@ -24,6 +29,7 @@ type alias Model =
     , targetSF : Float
     , tetrisSpeed : Float
     , targetTetrisSpeed : Float
+    , tetrisControlsActivated : Bool
     , jumpSize : Float
     , lastTick : Time.Time
     , keysDown : KeysDown
@@ -50,12 +56,15 @@ init =
 
 initialWorld =
     { tetris = exampleTetrisState
-    , player = initialPlayer ( 50, 100 )
-    , others = [ princess ( 100, 100 ) ]
-    , sf = 3
-    , targetSF = 0.5
-    , tetrisSpeed = 2
-    , targetTetrisSpeed = 8
+    , player =
+        initialPlayer ( 50, 100 )
+        --    , others = [ princess ( 100, 100 ) ]
+    , others = []
+    , sf = 4
+    , targetSF = 0.05
+    , tetrisSpeed = 0.006
+    , targetTetrisSpeed = 0.5
+    , tetrisControlsActivated = False
     , jumpSize = 22
     , lastTick = 0
     , keysDown = { w = False, a = False, s = False, d = False }
@@ -76,10 +85,8 @@ view model =
     div []
         [ css "http://localhost:8080/style.css"
         , js "http://localhost:8080/script.js"
-        , button [ onClick Decrement ] [ text "-" ]
-        , button [ onClick Increment ] [ text "+" ]
-        , storyView model
-        , tetrisView model.tetris
+        , storyView 800 600 model
+          --        , tetrisView model.tetris
         ]
 
 
@@ -100,9 +107,7 @@ tetrisView tetris =
 
 
 type Msg
-    = Increment
-    | Decrement
-    | KeyDownMsg Keyboard.KeyCode
+    = KeyDownMsg Keyboard.KeyCode
     | KeyUpMsg Keyboard.KeyCode
     | Tick Time.Time
     | NewPiece Int
@@ -169,11 +174,11 @@ slowedPlayer dt player =
             { player | dx = player.dx * μ ^ dt }
 
 
-blockUpdate : Float -> TetrisState -> Collidable (Movable (Standable (Drawable a))) -> Collidable (Movable (Standable (Drawable a)))
-blockUpdate dt tetris entity =
+blockUpdate : Int -> Float -> TetrisState -> Collidable (Movable (Standable (Drawable a))) -> Collidable (Movable (Standable (Drawable a)))
+blockUpdate ticksPerTetrisSquare dt tetris entity =
     let
         blocks =
-            tetrisBlocksWithWalls dt tetris
+            tetrisBlocksWithWalls ticksPerTetrisSquare dt tetris
     in
         doCollisions blocks entity
 
@@ -185,12 +190,6 @@ update msg model =
             case msg of
                 NewPiece i ->
                     { model | tetris = (withNewPiece i model.tetris) }
-
-                Increment ->
-                    { model | sf = model.sf * 1.25 }
-
-                Decrement ->
-                    { model | sf = model.sf * 0.8 }
 
                 KeyDownMsg code ->
                     let
@@ -215,18 +214,30 @@ update msg model =
                                     keysDown
 
                         newTetris =
-                            case Char.fromCode code of
-                                'J' ->
-                                    tetrisLeft model.tetris
+                            if model.tetrisControlsActivated then
+                                case Char.fromCode code of
+                                    'J' ->
+                                        tetrisLeft model.tetris
 
-                                'L' ->
-                                    tetrisRight model.tetris
+                                    'L' ->
+                                        tetrisRight model.tetris
 
-                                'K' ->
-                                    tetrisDown model.tetris
+                                    'K' ->
+                                        tetrisDown model.tetris
 
-                                _ ->
-                                    model.tetris
+                                    'U' ->
+                                        tetrisRotateLeft model.tetris
+
+                                    'I' ->
+                                        tetrisRotateRight model.tetris
+
+                                    'O' ->
+                                        tetrisRotateRight model.tetris
+
+                                    _ ->
+                                        model.tetris
+                            else
+                                model.tetris
 
                         newZoom =
                             case code of
@@ -279,7 +290,7 @@ update msg model =
                                         |> slowedPlayer 0.5
                                         |> gravity 0.5
                                         |> resetGround
-                                        |> blockUpdate 0.5 model.tetris
+                                        |> blockUpdate (ticks model.tetrisSpeed) 0.5 model.tetris
                                         |> keypressedPlayer model.keysDown 0.5 model.jumpSize
                                         |> step 0.5
                                 , others =
@@ -289,23 +300,24 @@ update msg model =
                                                 |> slowedPlayer 0.5
                                                 |> gravity 0.5
                                                 |> resetGround
-                                                |> blockUpdate 0.5 model.tetris
+                                                |> blockUpdate (ticks model.tetrisSpeed) 0.5 model.tetris
                                                 |> step 0.5
                                         )
                                         model.others
                             }
 
-        -- onGround will be set in blockUpdate
+        -- onGround will be set if appropriate in blockUpdate
         -- blockupate has most priority over step params
     in
         let
             newTetris =
-                playTetris (0.5 * newModel.tetrisSpeed) newModel.tetris
+                playTetris (ticks newModel.tetrisSpeed) 0.5 newModel.tetris
 
             newerModel =
                 { newModel
-                    | sf = ((newModel.sf * 999) + (newModel.targetSF * 1)) / 1000
-                    , tetrisSpeed = ((newModel.tetrisSpeed * 999) + (newModel.targetTetrisSpeed * 1)) / 1000
+                    | sf = ((newModel.sf * 1999) + (newModel.targetSF * 1)) / 2000
+                    , tetrisSpeed = ((newModel.tetrisSpeed * 9999) + (newModel.targetTetrisSpeed * 1)) / 10000
+                    , tetrisControlsActivated = (abs (model.sf - model.targetSF)) < 0.5
                 }
         in
             if (model.player.squish /= 0.0) then
@@ -323,11 +335,11 @@ resetGround e =
     { e | onGround = False }
 
 
-playTetris : Float -> TetrisState -> TetrisState
-playTetris dt tetris =
+playTetris : Int -> Float -> TetrisState -> TetrisState
+playTetris ticksPerTetrisSquare dt tetris =
     let
         newFraction =
-            tetris.fraction + dt * (1 / ticksPerTetrisSquare)
+            tetris.fraction + dt * (1 / (toFloat ticksPerTetrisSquare))
     in
         if newFraction > 1 then
             if moveWorks ( 0, -2 ) tetris then

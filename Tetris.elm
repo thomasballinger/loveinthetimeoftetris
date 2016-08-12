@@ -1,4 +1,4 @@
-module Tetris exposing (divGrid, boardRows, boardCols, TetrisState, tetrisGrid, exampleTetrisState, tetrisRight, tetrisLeft, tetrisDown, displayBlocks, displayWalls, walls, tetrisBlocksWithWalls, moveWorks, pointAdd, ticksPerTetrisSquare, onSpots, gridGet, smallestY, initialBoard, clearLines)
+module Tetris exposing (divGrid, boardRows, boardCols, TetrisState, tetrisGrid, exampleTetrisState, tetrisRight, tetrisLeft, tetrisDown, displayBlocks, displayWalls, walls, tetrisBlocksWithWalls, moveWorks, pointAdd, onSpots, gridGet, smallestY, initialBoard, clearLines, tetrisRotateLeft, tetrisRotateRight)
 
 import Html.Attributes exposing (class)
 import Html exposing (div)
@@ -212,6 +212,18 @@ pieceMove ( dx, dy ) tetris =
         tetris
 
 
+pieceRotate : Int -> TetrisState -> TetrisState
+pieceRotate n tetris =
+    let
+        rot =
+            rotate tetris.active
+    in
+        if moveWorks ( 0, 0 ) { tetris | active = rot } then
+            { tetris | active = rot }
+        else
+            tetris
+
+
 smallestY : TetrisState -> Maybe Int
 smallestY tetris =
     if moveWorks ( 0, 0 ) tetris then
@@ -253,12 +265,16 @@ tetrisRight =
     pieceMove ( 1, 0 )
 
 
+tetrisRotateLeft =
+    pieceRotate 1
+
+
+tetrisRotateRight =
+    pieceRotate 3
+
+
 piecePix =
     100
-
-
-ticksPerTetrisSquare =
-    40
 
 
 
@@ -299,7 +315,7 @@ walls =
 
 displayBlocks : TetrisState -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool, squish : Float }
 displayBlocks tetris =
-    tetrisBlocks 0 tetris
+    tetrisBlocks (-10000) 0 tetris
         |> List.map (xywhToDrawable (rgb 0 200 0))
 
 
@@ -325,19 +341,19 @@ toWorldCords ( x, y ) =
     { x = toFloat x * piecePix - (piecePix / 2), y = toFloat y * piecePix - (piecePix / 2), w = piecePix, h = piecePix, dx = 0.0, dy = 0.0 }
 
 
-floatToWorldCords : ( Float, Float ) -> { x : Float, y : Float, w : Float, h : Float, dx : Float, dy : Float }
-floatToWorldCords ( x, y ) =
-    { x = x * piecePix - (piecePix / 2), y = y * piecePix - (piecePix / 2), w = toFloat piecePix, h = toFloat piecePix, dx = 0.0, dy = -piecePix * (1 / ticksPerTetrisSquare) }
+floatToWorldCords : Int -> ( Float, Float ) -> { x : Float, y : Float, w : Float, h : Float, dx : Float, dy : Float }
+floatToWorldCords ticksPerTetrisSquare ( x, y ) =
+    { x = x * piecePix - (piecePix / 2), y = y * piecePix - (piecePix / 2), w = toFloat piecePix, h = toFloat piecePix, dx = 0.0, dy = -piecePix * (1 / (toFloat ticksPerTetrisSquare)) }
 
 
 w0v e =
     { e | dx = 0, dy = 0 }
 
 
-tetrisBlocks : Float -> TetrisState -> List { x : Float, y : Float, w : Float, h : Float, dx : Float, dy : Float }
-tetrisBlocks dt tetris =
+tetrisBlocks : Int -> Float -> TetrisState -> List { x : Float, y : Float, w : Float, h : Float, dx : Float, dy : Float }
+tetrisBlocks ticksPerTetrisSquare dt tetris =
     (List.map toWorldCords (onSpots tetris.dead))
-        ++ (List.map floatToWorldCords (interpolatedActive tetris))
+        ++ (List.map (floatToWorldCords ticksPerTetrisSquare) (interpolatedActive tetris))
 
 
 interpolatedActive tetris =
@@ -348,5 +364,5 @@ interpolatedActive tetris =
         List.map (\( x, y ) -> ( (toFloat x) + dx, (toFloat y) + dy )) tetris.active.spots
 
 
-tetrisBlocksWithWalls dt tetris =
-    (tetrisBlocks dt tetris) ++ walls
+tetrisBlocksWithWalls ticksPerTetrisSquare dt tetris =
+    (tetrisBlocks ticksPerTetrisSquare dt tetris) ++ walls
