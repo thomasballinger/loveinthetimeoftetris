@@ -61,10 +61,10 @@ initialWorld =
         initialPlayer ( 50, 100 )
         --    , others = [ princess ( 100, 100 ) ]
     , others = []
-    , sf = 4
+    , sf = 5
     , targetSF = 0.3
-    , tetrisSpeed = 0.01
-    , targetTetrisSpeed = 0.5
+    , tetrisSpeed = 0.02
+    , targetTetrisSpeed = 0.4
     , tetrisControlsActivated = False
     , jumpSize = 22
     , lastTick = 0

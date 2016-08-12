@@ -3,6 +3,7 @@ module Tetris exposing (divGrid, boardRows, boardCols, TetrisState, tetrisGrid, 
 import Html.Attributes exposing (class)
 import Html exposing (div)
 import Array
+import Set
 import Util exposing (range)
 import Color exposing (Color, rgb)
 import Entity exposing (Collidable, Drawable, EntityState(..), Directional(..), drawInfoColor)
@@ -326,28 +327,28 @@ shadowRects tetris =
         fallingBlocks =
             List.map (floatToWorldCords (-1000)) (interpolatedActive tetris)
 
-        ( left, right ) =
-            case List.sort (List.map .x fallingBlocks) of
-                leftmost :: _ :: _ :: rightmost :: [] ->
-                    ( leftmost - (piecePix / 2)
-                    , rightmost + (piecePix / 2)
-                    )
+        xs =
+            Set.toList (Set.fromList (List.map .x fallingBlocks))
 
-                _ ->
-                    Debug.crash "falling blocks had no pieces in it?"
+        yFromX =
+            (\x ->
+                case List.minimum (List.map .y (List.filter (\block -> block.x == x) fallingBlocks)) of
+                    Just n ->
+                        n
 
-        top =
-            case List.sort (List.map .y fallingBlocks) of
-                _ :: _ :: _ :: topmost :: [] ->
-                    topmost - (piecePix / 2)
-
-                _ ->
-                    Debug.crash "falling blocks had no pieces in it?"
-
-        bottom =
-            0 - (piecePix)
+                    Nothing ->
+                        Debug.crash "block with no y coordinate?"
+            )
     in
-        [ { x = (right + left) / 2, y = (top + bottom) / 2, w = right - left, h = top - bottom, dx = 0.0, dy = 0.0 } ]
+        List.map
+            (\x ->
+                let
+                    y =
+                        yFromX x
+                in
+                    { x = x, y = (y - (piecePix * 2)) / 2, w = piecePix * 1.02, h = y + piecePix, dx = 0.0, dy = 0.0 }
+            )
+            xs
 
 
 displayWalls : List { x : Float, y : Float, w : Float, h : Float, dx : Float, dy : Float } -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool, squish : Float }
