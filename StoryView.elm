@@ -14,7 +14,7 @@ entities world =
 
 storyView world =
     Element.toHtml
-        (collage 400
+        (collage 600
             400
             ((List.map (draw ( world.sf, world.player.x, world.player.y )) (entities world))
                 ++ (List.map (draw ( world.sf, world.player.x, world.player.y )) (displayBlocks world.tetris))

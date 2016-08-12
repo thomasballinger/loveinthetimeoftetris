@@ -52,11 +52,11 @@ initialWorld =
     { tetris = exampleTetrisState
     , player = initialPlayer ( 50, 100 )
     , others = [ princess ( 100, 100 ) ]
-    , sf = 2
-    , targetSF = 1
-    , tetrisSpeed = 1
-    , targetTetrisSpeed = 2
-    , jumpSize = 20
+    , sf = 3
+    , targetSF = 0.5
+    , tetrisSpeed = 2
+    , targetTetrisSpeed = 8
+    , jumpSize = 22
     , lastTick = 0
     , keysDown = { w = False, a = False, s = False, d = False }
     }
@@ -169,7 +169,7 @@ slowedPlayer dt player =
             { player | dx = player.dx * μ ^ dt }
 
 
-blockUpdate : Float -> TetrisState -> Collidable (Movable (Standable a)) -> Collidable (Movable (Standable a))
+blockUpdate : Float -> TetrisState -> Collidable (Movable (Standable (Drawable a))) -> Collidable (Movable (Standable (Drawable a)))
 blockUpdate dt tetris entity =
     let
         blocks =
@@ -308,12 +308,15 @@ update msg model =
                     , tetrisSpeed = ((newModel.tetrisSpeed * 999) + (newModel.targetTetrisSpeed * 1)) / 1000
                 }
         in
-            ( { newerModel | tetris = newTetris }
-            , if newTetris.needsRandom then
-                Random.generate NewPiece (Random.int 1 7)
-              else
-                Cmd.none
-            )
+            if (model.player.squish /= 0.0) then
+                init
+            else
+                ( { newerModel | tetris = newTetris }
+                , if newTetris.needsRandom then
+                    Random.generate NewPiece (Random.int 1 7)
+                  else
+                    Cmd.none
+                )
 
 
 resetGround e =

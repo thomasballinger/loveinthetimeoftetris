@@ -244,7 +244,7 @@ wallCollision walls entity =
                     collision
 
 
-doCollisions : List (Collidable a) -> Collidable (Standable (Movable b)) -> Collidable (Standable (Movable b))
+doCollisions : List (Collidable a) -> Collidable (Standable (Movable (Drawable b))) -> Collidable (Standable (Movable (Drawable b)))
 doCollisions walls entity =
     let
         first =
@@ -259,7 +259,26 @@ doCollisions walls entity =
         e3 =
             wallAlter e2 second
     in
-        e3
+        crushCheck e3 first second
+
+
+crushCheck : Collidable (Standable (Movable (Drawable b))) -> PossibleCollision -> PossibleCollision -> Collidable (Standable (Movable (Drawable b)))
+crushCheck e c1 c2 =
+    case ( c1, c2 ) of
+        ( NoCollision, NoCollision ) ->
+            e
+
+        ( NoCollision, _ ) ->
+            e
+
+        ( _, NoCollision ) ->
+            e
+
+        ( Collision type1 _ _, Collision type2 _ _ ) ->
+            if ((type1 == Floor && type2 == Ceiling) || (type1 == Ceiling && type2 == Floor)) then
+                { e | squish = 1.0 }
+            else
+                e
 
 
 
