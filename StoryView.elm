@@ -1,6 +1,6 @@
 module StoryView exposing (storyView)
 
-import Collage exposing (Form, collage, toForm, rect, filled, move, scale)
+import Collage exposing (Form, collage, toForm, rect, filled, move, moveX, moveY, scale)
 import Element exposing (show, Element, image)
 import Text
 import Color exposing (Color, rgb)
@@ -114,4 +114,6 @@ spriteDraw ( x, y, w, h ) spriteInfo entity =
         (entityImage
             |> toForm
             |> move ( x, y )
+            |> moveY -(h / 8)
+         -- hardcoding player's feet to the ground
         )
