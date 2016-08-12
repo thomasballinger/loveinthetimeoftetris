@@ -1,7 +1,7 @@
 module Main exposing (..)
 
-import Html.Attributes exposing (class, rel, src, href)
-import Html exposing (div, button, text, br, node, Html)
+import Html.Attributes exposing (class, rel, src, href, style)
+import Html exposing (div, button, text, br, node, Html, a)
 import Html.App as App
 import Html.Events exposing (onClick)
 import Char
@@ -14,6 +14,7 @@ import Piece exposing (newPiece)
 import TetrisAI exposing (desiredXAndRot)
 import Keyboard
 import Random
+import Element
 
 
 ticks : Float -> Int
@@ -85,8 +86,10 @@ view model =
     div []
         [ css "http://localhost:8080/style.css"
         , js "http://localhost:8080/script.js"
-        , storyView 800 600 model
+        , div [ class "game" ] [ Element.toHtml (storyView 800 600 model) ]
           --        , tetrisView model.tetris
+        , div [ class "spacer" ] []
+        , a [ href "https://github.com/thomasballinger/loveinthetimeoftetris" ] [ text "an Elm experiment" ]
         ]
 
 

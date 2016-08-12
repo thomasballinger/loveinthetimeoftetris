@@ -315,8 +315,39 @@ walls =
 
 displayBlocks : TetrisState -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool, squish : Float }
 displayBlocks tetris =
-    tetrisBlocks (-10000) 0 tetris
-        |> List.map (xywhToDrawable (rgb 0 200 0))
+    (List.map (xywhToDrawable (rgb 200 200 200)) (shadowRects tetris))
+        ++ (tetrisBlocks (-10000) 0 tetris
+                |> List.map (xywhToDrawable (rgb 0 200 0))
+           )
+
+
+shadowRects tetris =
+    let
+        fallingBlocks =
+            List.map (floatToWorldCords (-1000)) (interpolatedActive tetris)
+
+        ( left, right ) =
+            case List.sort (List.map .x fallingBlocks) of
+                leftmost :: _ :: _ :: rightmost :: [] ->
+                    ( leftmost - (piecePix / 2)
+                    , rightmost + (piecePix / 2)
+                    )
+
+                _ ->
+                    Debug.crash "falling blocks had no pieces in it?"
+
+        top =
+            case List.sort (List.map .y fallingBlocks) of
+                _ :: _ :: _ :: topmost :: [] ->
+                    topmost - (piecePix / 2)
+
+                _ ->
+                    Debug.crash "falling blocks had no pieces in it?"
+
+        bottom =
+            0 - (piecePix)
+    in
+        [ { x = (right + left) / 2, y = (top + bottom) / 2, w = right - left, h = top - bottom, dx = 0.0, dy = 0.0 } ]
 
 
 displayWalls : List { x : Float, y : Float, w : Float, h : Float, dx : Float, dy : Float } -> List { drawinfo : Entity.DrawInfo, x : Float, y : Float, dir : Directional, state : EntityState, onGround : Bool, squish : Float }
