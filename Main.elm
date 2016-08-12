@@ -11,7 +11,7 @@ import Entity exposing (..)
 import Others exposing (..)
 import Tetris exposing (divGrid, exampleTetrisState, TetrisState, tetrisGrid, tetrisLeft, tetrisRight, tetrisDown, tetrisBlocksWithWalls, moveWorks, pointAdd, ticksPerTetrisSquare)
 import Piece exposing (newPiece)
-import TetrisAI exposing (desiredX)
+import TetrisAI exposing (desiredXAndRot)
 import Keyboard
 import Random
 
@@ -334,7 +334,7 @@ withNewPiece i tetris =
         withPiece =
             { tetris | needsRandom = False, active = newPiece i }
 
-        x =
-            Debug.log "Desired x" (desiredX withPiece)
+        ( x, rot ) =
+            Debug.log "Desired xAndRot" (desiredXAndRot withPiece)
     in
-        { withPiece | curSpot = ( x, 19 ), nextSpot = ( x, 18 ) }
+        { withPiece | curSpot = ( x, 19 ), nextSpot = ( x, 18 ), active = rot }

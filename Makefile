@@ -3,6 +3,9 @@ index.html: *.elm
 	elm make Main.elm --output=index.html
 	sed -i '' 's_http://localhost:8080/_/_g' index.html
 
+test: *.elm tests/*.elm
+	cd tests; elm test Main.elm
+
 deploy: index.html imgs script.js style.css
 	rsync -r index.html style.css script.js imgs tom:/home/tomb/elmgame
 

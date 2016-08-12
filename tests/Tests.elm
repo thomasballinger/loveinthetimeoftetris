@@ -30,7 +30,7 @@ all =
                 <| \() ->
                     Expect.equal (Piece.rotate Piece.pieceI1) Piece.pieceI2
             ]
-        , describe "TetrisAI"
+        , describe "TetrisAI heuristics"
             [ test "numFilled"
                 <| \() -> Expect.equal 4 (TetrisAI.numFilled (Tetris.tetrisGrid (Tetris.TetrisState Tetris.initialBoard Piece.pieceJ1 ( 4, -1 ) ( 1000, 1000 ) 0 False)))
             , test "linearPenalty"
@@ -39,6 +39,26 @@ all =
                 <| \() -> Expect.equal 0 (TetrisAI.numCovered (Tetris.tetrisGrid (Tetris.TetrisState Tetris.initialBoard Piece.pieceJ1 ( 4, -1 ) ( 1000, 1000 ) 0 False)))
             , test "numSidesFilled"
                 <| \() -> Expect.equal 0 (TetrisAI.numSidesFilled (Tetris.tetrisGrid (Tetris.TetrisState Tetris.initialBoard Piece.pieceJ1 ( 4, -1 ) ( 1000, 1000 ) 0 False)))
+            ]
+        , describe "TetrisAI state space"
+            [ test "boardStates"
+                <| \() ->
+                    Expect.equal (Tetris.boardCols - 1)
+                        (List.length (TetrisAI.boardStates (Tetris.TetrisState Tetris.initialBoard Piece.pieceO ( 0, Tetris.boardRows - 4 ) ( 1000, 1000 ) 0 False)))
+            , test "bestOSpot"
+                <| \() ->
+                    -- if the sort of states isn't stable, this could be a different value
+                    Expect.equal ( 0, Piece.pieceO )
+                        (TetrisAI.desiredXAndRot (Tetris.TetrisState Tetris.initialBoard Piece.pieceO ( 0, Tetris.boardRows - 4 ) ( 1000, 1000 ) 0 False))
+            , test "bestJSpot"
+                <| \() ->
+                    -- if the sort of states isn't stable, this could be a different value
+                    let
+                        tetris =
+                            Tetris.TetrisState Tetris.initialBoard Piece.pieceJ1 ( 0, Tetris.boardRows - 4 ) ( 1000, 1000 ) 0 False
+                    in
+                        Expect.equal ( 0, Piece.pieceJ1 )
+                            (TetrisAI.desiredXAndRot tetris)
             ]
         ]
 
@@ -52,12 +72,3 @@ pieceHasRotations ( piece, n ) =
         )
         <| \() ->
             Expect.equal (List.length (Piece.rotations piece)) n
-
-
-
--- TO TEST:
--- everything for ai
--- * number of possible states
--- each heuristic (these are prob fine though)
--- choosing between several
--- finding smallest Y

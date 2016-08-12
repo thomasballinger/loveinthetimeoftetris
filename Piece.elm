@@ -25,35 +25,35 @@ pieceO =
     Piece [ ( 0, 1 ), ( 0, 2 ), ( 1, 1 ), ( 1, 2 ) ] 2
 
 
-pieceJ1 =
+pieceL1 =
     Piece [ ( 0, 1 ), ( 1, 1 ), ( 2, 1 ), ( 2, 2 ) ] 3
 
 
-pieceJ2 =
+pieceL2 =
     Piece [ ( 0, 2 ), ( 1, 2 ), ( 1, 1 ), ( 1, 0 ) ] 3
 
 
-pieceJ3 =
+pieceL3 =
     Piece [ ( 0, 0 ), ( 0, 1 ), ( 1, 1 ), ( 2, 1 ) ] 3
 
 
-pieceJ4 =
+pieceL4 =
     Piece [ ( 1, 2 ), ( 1, 1 ), ( 1, 0 ), ( 2, 0 ) ] 3
 
 
-pieceL1 =
+pieceJ1 =
     Piece [ ( 0, 2 ), ( 0, 1 ), ( 1, 1 ), ( 2, 1 ) ] 4
 
 
-pieceL2 =
+pieceJ2 =
     Piece [ ( 0, 0 ), ( 1, 0 ), ( 1, 1 ), ( 1, 2 ) ] 4
 
 
-pieceL3 =
+pieceJ3 =
     Piece [ ( 0, 1 ), ( 1, 1 ), ( 2, 1 ), ( 2, 0 ) ] 4
 
 
-pieceL4 =
+pieceJ4 =
     Piece [ ( 1, 0 ), ( 1, 1 ), ( 1, 2 ), ( 2, 2 ) ] 4
 
 

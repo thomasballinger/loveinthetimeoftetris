@@ -1,4 +1,4 @@
-module TetrisAI exposing (desiredX, evaluate, numFilled, numCovered, linearPenalty, numSidesFilled)
+module TetrisAI exposing (desiredXAndRot, evaluate, numFilled, numCovered, linearPenalty, numSidesFilled, boardStates)
 
 import Tetris exposing (..)
 import Piece exposing (..)
@@ -6,25 +6,24 @@ import List
 import Array
 
 
-desiredX : TetrisState -> Int
-desiredX tetris =
+desiredXAndRot : TetrisState -> ( Int, Piece.Piece )
+desiredXAndRot tetris =
     let
         candidates =
-            Debug.log "candidates" (List.map (\t -> ( t, evaluate t )) (boardStates tetris))
+            --Debug.log "candidates"
+            (List.map (\t -> ( t, evaluate t )) (boardStates tetris))
     in
         case List.head (List.reverse (List.sortBy (\( t, score ) -> score) candidates)) of
             Just ( t, score ) ->
                 let
-                    thing =
-                        Debug.log "Score:" score
-
+                    -- thing = Debug.log "Score and board:" ( score, t )
                     ( x, _ ) =
                         t.curSpot
                 in
-                    x
+                    ( x, t.active )
 
             Nothing ->
-                4
+                ( 4, tetris.active )
 
 
 evaluate : TetrisState -> Float
@@ -34,10 +33,14 @@ evaluate tetris =
             tetrisGrid tetris
     in
         List.sum
-            [ Debug.log "num filled" ((-1.0) * toFloat (numFilled grid))
-            , Debug.log "linear penalty" (-0.2 * toFloat (linearPenalty grid))
-            , Debug.log "num covered" (-10.0 * toFloat (numCovered grid))
-            , Debug.log "sides filled" (1.0 * toFloat (numSidesFilled grid))
+            [ --Debug.log "num filled"
+              ((-1.0) * toFloat (numFilled grid))
+            , --Debug.log "linear penalty"
+              (-0.2 * toFloat (linearPenalty grid))
+            , --Debug.log "num covered"
+              (-10.0 * toFloat (numCovered grid))
+            , --Debug.log "sides filled"
+              (1.0 * toFloat (numSidesFilled grid))
             ]
 
 
@@ -49,19 +52,22 @@ boardStates : TetrisState -> List TetrisState
 boardStates tetris =
     let
         rots =
-            Debug.log "rotations" (rotations tetris.active)
+            --Debug.log "rotations"
+            (rotations tetris.active)
 
         xs =
             List.indexedMap (\i x -> i) (List.repeat boardCols 0)
 
         xRotPairs =
-            Debug.log "xRotPairs" (List.concatMap (\rot -> List.map (\y -> ( y, rot )) xs) rots)
+            --Debug.log "xRotPairs"
+            (List.concatMap (\rot -> List.map (\y -> ( y, rot )) xs) rots)
     in
         List.filter
             (\t ->
                 let
                     ( _, smally ) =
-                        Debug.log "spot" t.curSpot
+                        --Debug.log "spot"
+                        t.curSpot
                 in
                     smally > -10
             )
