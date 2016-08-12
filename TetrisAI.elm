@@ -30,7 +30,7 @@ evaluate : TetrisState -> Float
 evaluate tetris =
     let
         grid =
-            tetrisGrid tetris
+            clearLines (tetrisGrid tetris)
     in
         List.sum
             [ --Debug.log "num filled"
@@ -56,10 +56,9 @@ boardStates tetris =
             (rotations tetris.active)
 
         xs =
-            List.indexedMap (\i x -> i) (List.repeat boardCols 0)
+            List.indexedMap (\i x -> i - 2) (List.repeat (boardCols + 1) 0)
 
         xRotPairs =
-            --Debug.log "xRotPairs"
             (List.concatMap (\rot -> List.map (\y -> ( y, rot )) xs) rots)
     in
         List.filter

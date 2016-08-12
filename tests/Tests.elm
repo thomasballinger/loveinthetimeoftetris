@@ -45,6 +45,10 @@ all =
                 <| \() ->
                     Expect.equal (Tetris.boardCols - 1)
                         (List.length (TetrisAI.boardStates (Tetris.TetrisState Tetris.initialBoard Piece.pieceO ( 0, Tetris.boardRows - 4 ) ( 1000, 1000 ) 0 False)))
+            , test "boardStates"
+                <| \() ->
+                    Expect.equal (Tetris.boardCols - 3 + Tetris.boardCols)
+                        (List.length (TetrisAI.boardStates (Tetris.TetrisState Tetris.initialBoard Piece.pieceI1 ( 0, Tetris.boardRows - 4 ) ( 1000, 1000 ) 0 False)))
             , test "bestOSpot"
                 <| \() ->
                     -- if the sort of states isn't stable, this could be a different value

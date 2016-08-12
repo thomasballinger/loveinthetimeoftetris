@@ -1,4 +1,4 @@
-module Tetris exposing (divGrid, boardRows, boardCols, TetrisState, tetrisGrid, exampleTetrisState, tetrisRight, tetrisLeft, tetrisDown, displayBlocks, displayWalls, walls, tetrisBlocksWithWalls, moveWorks, pointAdd, ticksPerTetrisSquare, onSpots, gridGet, smallestY, initialBoard)
+module Tetris exposing (divGrid, boardRows, boardCols, TetrisState, tetrisGrid, exampleTetrisState, tetrisRight, tetrisLeft, tetrisDown, displayBlocks, displayWalls, walls, tetrisBlocksWithWalls, moveWorks, pointAdd, ticksPerTetrisSquare, onSpots, gridGet, smallestY, initialBoard, clearLines)
 
 import Html.Attributes exposing (class)
 import Html exposing (div)
@@ -166,6 +166,34 @@ spotsClear grid spots =
     arrayAll ((>) 2) (arrayAdd (Array.map allPosToOne grid) (spotsOnGrid 1 spots))
 
 
+clearLines : Array.Array Int -> Array.Array Int
+clearLines grid =
+    let
+        rowsLeft =
+            List.filter (List.any (\value -> value == 0)) (rows grid)
+
+        numCleared =
+            boardRows - (List.length rowsLeft)
+    in
+        Array.fromList
+            ((List.concat rowsLeft)
+                ++ (List.repeat (boardCols * (boardRows - (List.length rowsLeft))) 0)
+            )
+
+
+
+-- freeze piece, remove lines, new piece
+
+
+nextPiece : TetrisState -> TetrisState
+nextPiece tetris =
+    let
+        newGrid =
+            clearLines (tetrisGrid tetris)
+    in
+        { tetris | dead = newGrid, active = newPiece 1, curSpot = ( 4, 20 ), nextSpot = ( 4, 19 ), fraction = 0, needsRandom = True }
+
+
 
 -- playing tetris
 
@@ -179,11 +207,7 @@ pieceMove ( dx, dy ) tetris =
         in
             { tetris | curSpot = newSpot, nextSpot = newSpot, fraction = 0 }
     else if dy /= 0 then
-        let
-            newGrid =
-                tetrisGrid tetris
-        in
-            { tetris | dead = newGrid, active = newPiece 1, curSpot = ( 4, 20 ), nextSpot = ( 4, 19 ), fraction = 0, needsRandom = True }
+        nextPiece tetris
     else
         tetris
 
@@ -234,7 +258,7 @@ piecePix =
 
 
 ticksPerTetrisSquare =
-    10
+    1
 
 
 
