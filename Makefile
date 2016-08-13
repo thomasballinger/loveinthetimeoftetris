@@ -3,6 +3,8 @@ index.html: *.elm
 	elm make Main.elm --output=index.html
 	sed -i '' 's_http://localhost:8080/_/_g' index.html
 
+dev: imgs
+
 test: *.elm tests/*.elm
 	cd tests; elm test Main.elm
 
