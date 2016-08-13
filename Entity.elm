@@ -277,6 +277,8 @@ crushCheck e c1 c2 =
         ( Collision type1 _ _, Collision type2 _ _ ) ->
             if ((type1 == Floor && type2 == Ceiling) || (type1 == Ceiling && type2 == Floor)) then
                 { e | squish = 1.0 }
+            else if ((type1 == LeftWall && type2 == RightWall) || (type1 == LeftWall && type2 == RightWall)) then
+                { e | squish = -1.0 }
             else
                 e
 
