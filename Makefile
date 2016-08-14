@@ -1,7 +1,6 @@
 
-index.html: *.elm
-	elm make Main.elm --output=index.html
-	sed -i '' 's_http://localhost:8080/_/_g' index.html
+love.js: *.elm
+	elm make Main.elm --output=love.js
 
 dev: imgs
 

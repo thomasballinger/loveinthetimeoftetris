@@ -2,9 +2,16 @@
 <head>
 </head>
 <body>
-<script src="love.js"> </script>
+<script src="love.js" charset="UTF-8"> </script>
 <script src="tetris.js"> </script>
 <script src="script.js"> </script>
+<script>
+var app = Elm.Main.fullscreen()
+app.ports.setBPM.subscribe(function(bpm) {
+  setBPM(bpm);
+});
+</script>
+
 <script>
   document.documentElement.addEventListener('keydown', function (e) {
       if ( ( e.keycode || e.which ) == 32) {

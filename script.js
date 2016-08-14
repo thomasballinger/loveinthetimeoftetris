@@ -3,7 +3,6 @@
 
   global.setBPM = function(bpm){
     desiredTicksPerSecond = bpm / 60 * midiPPQ;
-    console.log(bpm, 'bpm');
   };
 
   var song = tetrisSong.notes.slice();
