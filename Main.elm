@@ -1,4 +1,4 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Html.Attributes exposing (class, rel, src, href, style)
 import Html exposing (div, button, text, br, node, Html, a)
@@ -15,6 +15,9 @@ import TetrisAI exposing (desiredXAndRot)
 import Keyboard
 import Random
 import Element
+
+
+port setBPM : Float -> Cmd msg
 
 
 ticks : Float -> Int
@@ -52,7 +55,7 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    ( initialWorld, Cmd.none )
+    ( initialWorld, setBPM 20 )
 
 
 initialWorld =
@@ -84,9 +87,7 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     div []
-        [ css "http://localhost:8080/style.css"
-        , js "http://localhost:8080/script.js"
-        , div [ class "game" ] [ Element.toHtml (storyView 800 600 model) ]
+        [ div [ class "game" ] [ Element.toHtml (storyView 800 600 model) ]
           --        , tetrisView model.tetris
         , div [ class "spacer" ] []
         , a [ href "https://github.com/thomasballinger/loveinthetimeoftetris" ] [ text "an Elm experiment" ]
@@ -327,10 +328,13 @@ update msg model =
                 init
             else
                 ( { newerModel | tetris = newTetris }
-                , if newTetris.needsRandom then
-                    Random.generate NewPiece (Random.int 1 7)
-                  else
-                    Cmd.none
+                , Cmd.batch
+                    [ setBPM (100 / newModel.sf)
+                    , if newTetris.needsRandom then
+                        Random.generate NewPiece (Random.int 1 7)
+                      else
+                        Cmd.none
+                    ]
                 )
 
 

@@ -1,0 +1,16 @@
+<html>
+<head>
+</head>
+<body>
+<script src="love.js"> </script>
+<script src="tetris.js"> </script>
+<script src="script.js"> </script>
+<script>
+  document.documentElement.addEventListener('keydown', function (e) {
+      if ( ( e.keycode || e.which ) == 32) {
+          e.preventDefault();
+      }
+  }, false);
+<script>
+</body>
+</html>
