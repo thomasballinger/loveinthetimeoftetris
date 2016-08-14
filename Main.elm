@@ -55,7 +55,7 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    ( initialWorld, Cmd.none )
+    ( initialWorld, setBPM 20 )
 
 
 initialWorld =

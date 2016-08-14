@@ -7,8 +7,8 @@ dev: imgs
 test: *.elm tests/*.elm
 	cd tests; elm test Main.elm
 
-deploy: index.html imgs script.js style.css
-	rsync -r index.html style.css script.js imgs tom:/home/tomb/elmgame
+deploy: love.js imgs script.js tetris.js style.css
+	rsync -r index.html love.js style.css script.js tetris.js imgs tom:/home/tomb/elmgame
 
 #deploy should be updated to make changes to the html
 
