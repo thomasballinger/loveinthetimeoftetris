@@ -18,9 +18,8 @@
   audioContext = new AudioContext();
   scheduleNotes();
 
-
   function scheduleNotes(){
-    // find all notes that will occur in next .1 seconds and schedule them
+    // find all notes that will occur in next ~.25 seconds and schedule them
     var curTicksPerSecond = desiredTicksPerSecond || lastTicksPerSecond;
     desiredTicksPerSecond = undefined;
 
@@ -28,7 +27,10 @@
     var dt = curTime - lastTime;
     var curTick = lastTick + lastTicksPerSecond * dt;
 
-    var maxTickToSchedule = curTick + 0.1 * curTicksPerSecond;
+    var schedule_into_future = Math.max(0.25, dt * 2);
+    console.log('scheduling', schedule_into_future, 'into the future');
+
+    var maxTickToSchedule = curTick + schedule_into_future * curTicksPerSecond;
     while (nextUnscheduledNoteStartIndex < song.length &&
            song[nextUnscheduledNoteStartIndex].ticks <= maxTickToSchedule){
       var note = song[nextUnscheduledNoteStartIndex++];

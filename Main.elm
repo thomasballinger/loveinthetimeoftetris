@@ -55,7 +55,7 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    ( initialWorld, setBPM 20 )
+    ( initialWorld, Cmd.none )
 
 
 initialWorld =
@@ -329,7 +329,7 @@ update msg model =
             else
                 ( { newerModel | tetris = newTetris }
                 , Cmd.batch
-                    [ setBPM (100 / newModel.sf)
+                    [ setBPM (40 / newModel.sf)
                     , if newTetris.needsRandom then
                         Random.generate NewPiece (Random.int 1 7)
                       else
