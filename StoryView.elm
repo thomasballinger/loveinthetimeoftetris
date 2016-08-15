@@ -102,7 +102,7 @@ spriteDraw ( x, y, w, h ) spriteInfo entity =
                 ""
 
         root =
-            "http://localhost:8080/imgs/"
+            "imgs/"
 
         src =
             root ++ spriteInfo.spriteName ++ verb ++ dir ++ ".gif"

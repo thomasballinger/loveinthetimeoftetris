@@ -1,4 +1,9 @@
 elm-stuff
 imgs
+
+# downloaded scripts
 MidiConvert.js
 Tone.js
+
+# compiled from Elm
+love.js
