@@ -65,7 +65,7 @@ initialWorld =
         --    , others = [ princess ( 100, 100 ) ]
     , others = []
     , sf = 5
-    , targetSF = 0.3
+    , targetSF = 0.5
     , tetrisSpeed = 0.05
     , targetTetrisSpeed = 0.4
     , tetrisControlsActivated = False
@@ -319,7 +319,18 @@ update msg model =
 
             newerModel =
                 { newModel
-                    | sf = ((newModel.sf * 1999) + (newModel.targetSF * 1)) / 2000
+                    | sf =
+                        let
+                            diff =
+                                newModel.targetSF - newModel.sf
+
+                            sign =
+                                if diff == 0 then
+                                    0
+                                else
+                                    diff / (abs diff)
+                        in
+                            newModel.sf + sign * (min (abs diff) 0.001)
                     , tetrisSpeed = ((newModel.tetrisSpeed * 9999) + (newModel.targetTetrisSpeed * 1)) / 10000
                     , tetrisControlsActivated = (abs (model.sf - model.targetSF)) < 0.5
                 }
@@ -329,13 +340,20 @@ update msg model =
             else
                 ( { newerModel | tetris = newTetris }
                 , Cmd.batch
-                    [ setBPM (40 / newModel.sf)
+                    [ setBPM (bpmFromScaleFactor newModel.sf)
                     , if newTetris.needsRandom then
                         Random.generate NewPiece (Random.int 1 7)
                       else
                         Cmd.none
                     ]
                 )
+
+
+bpmFromScaleFactor : Float -> Float
+bpmFromScaleFactor sf =
+    -- sf goes from .3 to 5
+    -- bpm should go from 20 to 80
+    sf ^ (-1 / 2) * 80
 
 
 resetGround e =

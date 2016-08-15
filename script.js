@@ -1,72 +1,82 @@
 (function(global){
-  var midiPPQ = 9600;  // hardcoded for now, from tetris song file
-
   global.setBPM = function(bpm){
-    desiredTicksPerSecond = bpm / 60 * midiPPQ;
+    Tone.Transport.bpm.value = bpm;
   };
 
-  var song = tetrisSong.notes.slice();
-
-  var bpm = 60;
-  var lastTicksPerSecond = bpm / 60 * midiPPQ;
-  var lastTick = 0;
-  var lastTime = 0;
-  var desiredTicksPerSecond = undefined;
-  var nextUnscheduledNoteStartIndex = 0;
-  var queuedOrPlaying = [];
-
-  audioContext = new AudioContext();
-  scheduleNotes();
-
-  function scheduleNotes(){
-    // find all notes that will occur in next ~.25 seconds and schedule them
-    var curTicksPerSecond = desiredTicksPerSecond || lastTicksPerSecond;
-    desiredTicksPerSecond = undefined;
-
-    var curTime = audioContext.currentTime;
-    var dt = curTime - lastTime;
-    var curTick = lastTick + lastTicksPerSecond * dt;
-
-    var schedule_into_future = Math.max(0.25, dt * 2);
-    console.log('scheduling', schedule_into_future, 'into the future');
-
-    var maxTickToSchedule = curTick + schedule_into_future * curTicksPerSecond;
-    while (nextUnscheduledNoteStartIndex < song.length &&
-           song[nextUnscheduledNoteStartIndex].ticks <= maxTickToSchedule){
-      var note = song[nextUnscheduledNoteStartIndex++];
-      if (note.ticks < curTick ){
-        console.warn("we missed a note!");
+  tetrisSpec = {
+    'Tetris Melody': {
+      instrument: function(){
+        var synth = new Tone.Synth();
+        synth.toMaster();
+        return synth;
+      },
+      attack: function(synth, t, freq, vel){
+        synth.triggerAttack(freq, t, vel);
       }
-      var osc = playNote(curTime + (note.ticks - curTick)/curTicksPerSecond, note.midi);
-      queuedOrPlaying.push([osc, note.ticks + note.duration * 12800]);  //TODO hardcoded for Tetris
-           // Should really switch everything to time units, since durations are in time
-           // and it's better anyway
+    },
+    'Tetris Harmony': {
+      instrument: function(){
+        var synth = new Tone.Synth();
+        synth.toMaster();
+        return synth;
+      },
+      attack: function(synth, t, freq, vel){
+        synth.triggerAttack(freq, t, vel);
+      }
+    },
+    'Tetris Bass': {
+      instrument: function(){
+        var synth = new Tone.Synth();
+        synth.toMaster();
+        return synth;
+      },
+      attack: function(synth, t, freq, vel){
+        synth.triggerAttack(freq, t, vel);
+      }
+    },
+    'Tetris Perc': {
+      instrument: function(){
+        var synth = new Tone.NoiseSynth();
+        synth.volume.value = -12;
+        synth.toMaster();
+        return synth;
+      },
+      attack: function(synth, t, freq, vel){
+        synth.triggerAttack(t);
+      },
     }
-    queuedOrPlaying = queuedOrPlaying.filter(function(x){
-      var osc = x[0];
-      var tick = x[1];
-      if (tick <= maxTickToSchedule){
-        var stopTime = (curTime + (tick - curTick)/curTicksPerSecond);
-        osc.stop(stopTime);
-        return false;
-      } else {
-        return true;
+  };
+
+  function scheduleAttack(synth, attack, freq, time, velocity){
+    Tone.Transport.schedule(function(t){
+      attack(synth, t, freq, velocity);
+    }, time);
+  }
+  function scheduleRelease(synth, time){
+    Tone.Transport.schedule(function(t){
+      synth.triggerRelease(t);
+    }, time);
+  }
+
+  function play(song, spec){
+    for (var track of song.tracks){
+      if (!spec[track.name]){ continue; }
+
+      var synth = spec[track.name].instrument();
+      var attack = spec[track.name].attack;
+
+      for (var note of track.notes){
+        scheduleAttack(synth, attack, note.note, note.time, note.velocity);
+        scheduleRelease(synth, note.time + note.duration);
       }
-    });
-
-    lastTick = curTick;
-    lastTime = curTime;
-    lastTicksPerSecond = curTicksPerSecond;
-    setTimeout(scheduleNotes, 100);
+    }
+    Tone.Transport.bpm.value = 100;
+    Tone.Transport.start();
   }
 
-  function playNote(time, midiPitch){
-    var osc = audioContext.createOscillator();
-    osc.connect( audioContext.destination );
-    var freq = 261.6 * Math.pow(2, (midiPitch/12) - 5);
-    osc.frequency.value = freq;
-    osc.start(time);
-    //osc.stop(time + noteLength);
-    return osc;
-  }
+  global.play = play;
+  global.tetrisSpec = tetrisSpec;
+  play(tetrisSong, tetrisSpec);
+
+
 })(window);
