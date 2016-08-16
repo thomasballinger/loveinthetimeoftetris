@@ -353,7 +353,7 @@ bpmFromScaleFactor : Float -> Float
 bpmFromScaleFactor sf =
     -- sf goes from .3 to 5
     -- bpm should go from 20 to 80
-    sf ^ (-1 / 2) * 80
+    50 + ((sf ^ (-5 / 3)) * 85)
 
 
 resetGround e =

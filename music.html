@@ -7,9 +7,12 @@
     <script src="script.js"></script>
     <input id="tempoSlider"
         type="range"
-        min="10"
-        max="400"
+        min="60"
+        max="300"
         value="120"
-        oninput="Tone.Transport.bpm.value = parseInt(tempoSlider.value); console.log('bpm', tempoSlider.value)">
+        oninput="setBPM(tempoSlider.value); display.innerHTML = tempoSlider.value">
+    <span id="display"></span>
+    <script>tempoSlider.oninput()</script>
+    <!-- 290 is full tetris speed -->
   </body>
 </html>
