@@ -110,7 +110,7 @@ spriteDraw ( x, y, w, h ) spriteInfo entity =
             "imgs/"
 
         src =
-            root ++ spriteInfo.spriteName ++ (Debug.log "verb" verb) ++ dir ++ ".gif"
+            root ++ spriteInfo.spriteName ++ verb ++ dir ++ ".gif"
 
         entityImage =
             image (round w) (round h) src

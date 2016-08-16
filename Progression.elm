@@ -20,7 +20,7 @@ type alias KeysDown =
 
 
 bpm model =
-    60 + ((min model.progress 1) * 230)
+    80 + ((min model.progress 1) * 230)
 
 
 sf model =
@@ -28,7 +28,7 @@ sf model =
 
 
 tetrisSpeed model =
-    0.05 + (model.progress * 0.2)
+    0.02 + (model.progress * 0.2)
 
 
 tetrisTicks model =

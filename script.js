@@ -54,9 +54,9 @@
   };
   /* silent - full - full - silent */
   tetrisPlayer.prototype.groupInfo = {
-    'tetris': [120, 230, 10000, 10000],
+    'tetris': [140, 270, 10000, 10000],
     'always': [0, 0, 10000, 10000],
-    'alt'   : [0, 0, 140, 240]
+    'alt'   : [0, 0, 170, 290]
   };
   tetrisPlayer.prototype.trackInfo = {
     'Tetris Melody': {
@@ -129,14 +129,36 @@
     }, time);
   }
 
+  function lastReleaseTime(song){
+    var t = 0;
+    console.log(song.tracks);
+    for (var track of song.tracks){
+      if (!track.name){ continue; }
+      for (var note of track.notes){
+        releaseTime = note.time + note.duration;
+        if (releaseTime > t){
+          t = releaseTime;
+        }
+      }
+    }
+    return t;
+  }
+
   function play(song, player){
-    scheduleSong(song, player, 0.2);
+    var duration = lastReleaseTime(song);
+    var initialOffset = 0.2;
+    scheduleSong(song, player, initialOffset);
     Tone.Transport.bpm.value = 20;
+    Tone.Transport.loop = true;
+    Tone.Transport.setLoopPoints(0.2, initialOffset + duration * 6);
+    // I don't understand why the "* 6" in the line above makes the
+    // looping work correctly.
     player.updateGains(20);
     Tone.Transport.start();
   }
 
   function scheduleSong(song, player, offset){
+    var lastReleaseTime = 0;
     for (var track of song.tracks){
       if (!player.trackInfo[track.name]){
         continue;
@@ -149,7 +171,11 @@
 
       for (var note of track.notes){
         scheduleAttack(synth, attack, note.note, note.time + offset, note.velocity);
-        scheduleRelease(synth, release, note.note, note.time + offset + note.duration);
+        releaseTime = note.time + offset + note.duration;
+        if (releaseTime > lastReleaseTime){
+          lastReleaseTime = releaseTime;
+        }
+        scheduleRelease(synth, release, note.note, releaseTime);
       }
     }
   }
