@@ -6,6 +6,7 @@ import Html.App as App
 import Html.Events exposing (onClick)
 import Char
 import Time
+import Progression exposing (Model, bpm, sf, tetrisControlsActivated, tetrisTicks, jumpSize)
 import StoryView exposing (storyView)
 import Entity exposing (..)
 import Others exposing (..)
@@ -18,30 +19,6 @@ import Element
 
 
 port setBPM : Float -> Cmd msg
-
-
-ticks : Float -> Int
-ticks speed =
-    round (1 / speed)
-
-
-type alias Model =
-    { tetris : TetrisState
-    , player : Movable (Standable (Collidable (Drawable {})))
-    , others : List (Movable (Standable (Collidable (Drawable {}))))
-    , sf : Float
-    , targetSF : Float
-    , tetrisSpeed : Float
-    , targetTetrisSpeed : Float
-    , tetrisControlsActivated : Bool
-    , jumpSize : Float
-    , lastTick : Time.Time
-    , keysDown : KeysDown
-    }
-
-
-type alias KeysDown =
-    { w : Bool, a : Bool, s : Bool, d : Bool }
 
 
 main =
@@ -64,12 +41,7 @@ initialWorld =
         initialPlayer ( 50, 100 )
         --    , others = [ princess ( 100, 100 ) ]
     , others = []
-    , sf = 5
-    , targetSF = 0.5
-    , tetrisSpeed = 0.05
-    , targetTetrisSpeed = 0.4
-    , tetrisControlsActivated = False
-    , jumpSize = 22
+    , progress = 0
     , lastTick = 0
     , keysDown = { w = False, a = False, s = False, d = False }
     }
@@ -117,11 +89,11 @@ type Msg
     | NewPiece Int
 
 
-keypressedPlayer keysDown dt jumpSize player =
+keypressedPlayer keysDown dt jump player =
     let
         afterJump =
             if keysDown.w && player.onGround then
-                { player | dy = player.dy + jumpSize, onGround = False }
+                { player | dy = player.dy + jump, onGround = False }
             else
                 player
 
@@ -218,7 +190,7 @@ update msg model =
                                     keysDown
 
                         newTetris =
-                            if model.tetrisControlsActivated then
+                            if tetrisControlsActivated model then
                                 case Char.fromCode code of
                                     'J' ->
                                         tetrisLeft model.tetris
@@ -243,18 +215,18 @@ update msg model =
                             else
                                 model.tetris
 
-                        newZoom =
+                        newProgress =
                             case code of
                                 189 ->
-                                    model.sf * 0.8
+                                    max 0 (model.progress - 0.1)
 
                                 187 ->
-                                    model.sf * 1.25
+                                    min 2 (model.progress + 0.1)
 
                                 _ ->
-                                    model.sf
+                                    model.progress
                     in
-                        { model | keysDown = newKeysDown, tetris = newTetris, sf = newZoom }
+                        { model | keysDown = newKeysDown, tetris = newTetris, progress = newProgress }
 
                 KeyUpMsg code ->
                     let
@@ -294,8 +266,8 @@ update msg model =
                                         |> slowedPlayer 0.5
                                         |> gravity 0.5
                                         |> resetGround
-                                        |> blockUpdate (ticks model.tetrisSpeed) 0.5 model.tetris
-                                        |> keypressedPlayer model.keysDown 0.5 model.jumpSize
+                                        |> blockUpdate (tetrisTicks model) 0.5 model.tetris
+                                        |> keypressedPlayer model.keysDown 0.5 (jumpSize model)
                                         |> step 0.5
                                 , others =
                                     List.map
@@ -304,7 +276,7 @@ update msg model =
                                                 |> slowedPlayer 0.5
                                                 |> gravity 0.5
                                                 |> resetGround
-                                                |> blockUpdate (ticks model.tetrisSpeed) 0.5 model.tetris
+                                                |> blockUpdate (tetrisTicks model) 0.5 model.tetris
                                                 |> step 0.5
                                         )
                                         model.others
@@ -315,24 +287,11 @@ update msg model =
     in
         let
             newTetris =
-                playTetris (ticks newModel.tetrisSpeed) 0.5 newModel.tetris
+                playTetris (tetrisTicks model) 0.5 newModel.tetris
 
             newerModel =
                 { newModel
-                    | sf =
-                        let
-                            diff =
-                                newModel.targetSF - newModel.sf
-
-                            sign =
-                                if diff == 0 then
-                                    0
-                                else
-                                    diff / (abs diff)
-                        in
-                            newModel.sf + sign * (min (abs diff) 0.001)
-                    , tetrisSpeed = ((newModel.tetrisSpeed * 9999) + (newModel.targetTetrisSpeed * 1)) / 10000
-                    , tetrisControlsActivated = (abs (model.sf - model.targetSF)) < 0.5
+                    | progress = max (newModel.progress + 0.0005) 0.9
                 }
         in
             if (model.player.squish /= 0.0) then
@@ -340,20 +299,13 @@ update msg model =
             else
                 ( { newerModel | tetris = newTetris }
                 , Cmd.batch
-                    [ setBPM (bpmFromScaleFactor newModel.sf)
+                    [ setBPM (bpm newModel)
                     , if newTetris.needsRandom then
                         Random.generate NewPiece (Random.int 1 7)
                       else
                         Cmd.none
                     ]
                 )
-
-
-bpmFromScaleFactor : Float -> Float
-bpmFromScaleFactor sf =
-    -- sf goes from .3 to 5
-    -- bpm should go from 20 to 80
-    50 + ((sf ^ (-5 / 3)) * 85)
 
 
 resetGround e =

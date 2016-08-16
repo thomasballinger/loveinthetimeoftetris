@@ -6,6 +6,7 @@ import Text
 import Color exposing (Color, rgb)
 import Tetris exposing (TetrisState, displayBlocks, displayWalls, walls)
 import Entity exposing (Drawable, Directional(..), EntityState(..), drawInfoColor)
+import Progression
 
 
 entities world =
@@ -15,10 +16,10 @@ entities world =
 storyView w h world =
     (collage w
         h
-        ((List.map (draw ( world.sf, world.player.x, world.player.y )) (displayBlocks world.tetris))
-            ++ (List.map (draw ( world.sf, world.player.x, world.player.y )) (entities world))
-            ++ (List.map (draw ( world.sf, world.player.x, world.player.y )) (displayWalls walls))
-            ++ (if world.tetrisControlsActivated then
+        ((List.map (draw ( Progression.sf world, world.player.x, world.player.y )) (displayBlocks world.tetris))
+            ++ (List.map (draw ( Progression.sf world, world.player.x, world.player.y )) (entities world))
+            ++ (List.map (draw ( Progression.sf world, world.player.x, world.player.y )) (displayWalls walls))
+            ++ (if Progression.tetrisControlsActivated world then
                     [ Collage.text (Text.fromString "Tetris Controls: IJKL") |> move ( 0, ((toFloat h) / 2) - 10 ) ]
                 else
                     [ Collage.text (Text.fromString "Controls: WASD") |> move ( 0, ((toFloat h) / 2) - 10 ) ]

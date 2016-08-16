@@ -18,7 +18,6 @@
         if (!this[group]){
           this[group] = new Tone.Volume();
           this[group].toMaster();
-          console.log("new volume node at", group);
         }
       }
     }
@@ -31,29 +30,23 @@
   tetrisPlayer.prototype.buildInstrument = function(track){
     var instrument = this.trackInfo[track].instrument(this);
     var group = this.trackInfo[track].group;
-    console.log("connecting", track, "to", group, this[group]);
     instrument.connect(this[group]);
     return instrument;
   };
   tetrisPlayer.prototype.updateGains = function(bpm){
-    console.log("called updateGains");
     for (var name in this.groupInfo){
       var x = this.groupInfo[name];
       if (bpm < x[0] || bpm > x[3]){
         this[name].mute = true;
-        console.log('muted', name);
       } else if (bpm > x[1] && bpm < x[2]){
         this[name].mute = false;
         this[name].volume.value = 0;
-        console.log('full volume', name);
       } else if (bpm > x[2]){
         this[name].mute = false;
-        console.log('transitioning', name);
         var fraction = (bpm - x[2]) / (x[3] - x[2]);
         this[name].volume.value = -15 * fraction;
       } else if (bpm < x[1]){
         this[name].mute = false;
-        console.log('transitioning', name);
         var fraction = (bpm - x[0]) / (x[1] - x[0]);
         this[name].volume.value = -15 * (1 - fraction);
       }
@@ -169,7 +162,6 @@
 
 
   global.setBPM = function(bpm){
-    console.log("set bpm to", bpm);
     var diff = Math.abs(bpm - Tone.Transport.bpm.value);
     if (diff < 1){ return; }
     Tone.Transport.bpm.value = bpm;
