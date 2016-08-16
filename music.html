@@ -1,0 +1,15 @@
+<html>
+  <head>
+  </head>
+  <body>
+    <script src="Tone.js"></script>
+    <script src="tetrisSong.js"></script>
+    <script src="script.js"></script>
+    <input id="tempoSlider"
+        type="range"
+        min="10"
+        max="400"
+        value="120"
+        oninput="Tone.Transport.bpm.value = parseInt(tempoSlider.value); console.log('bpm', tempoSlider.value)">
+  </body>
+</html>
