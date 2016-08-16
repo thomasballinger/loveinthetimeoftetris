@@ -131,7 +131,6 @@
 
   function lastReleaseTime(song){
     var t = 0;
-    console.log(song.tracks);
     for (var track of song.tracks){
       if (!track.name){ continue; }
       for (var note of track.notes){
@@ -180,12 +179,11 @@
     }
   }
 
-  global.play = play;
-  global.tetrisPlayer = tetrisPlayer;
-
   var player = new tetrisPlayer();
-  play(tetrisSong, player);
 
+  global.playTetrisSong = function(){
+    play(tetrisSong, player);
+  };
 
   global.setBPM = function(bpm){
     var diff = Math.abs(bpm - Tone.Transport.bpm.value);

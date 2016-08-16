@@ -21,6 +21,9 @@ import Element
 port setBPM : Float -> Cmd msg
 
 
+port touch : (( Bool, Int ) -> msg) -> Sub msg
+
+
 main =
     App.program
         { init = init
@@ -53,6 +56,7 @@ subscriptions model =
         [ Keyboard.downs KeyDownMsg
         , Keyboard.ups KeyUpMsg
         , Time.every 16 Tick
+        , touch Touch
         ]
 
 
@@ -87,6 +91,7 @@ type Msg
     | KeyUpMsg Keyboard.KeyCode
     | Tick Time.Time
     | NewPiece Int
+    | Touch ( Bool, Int )
 
 
 keypressedPlayer keysDown dt jump player =
@@ -159,6 +164,24 @@ blockUpdate ticksPerTetrisSquare dt tetris entity =
         doCollisions blocks entity
 
 
+setKeysFromCode keysDown value code =
+    case Char.fromCode code of
+        'W' ->
+            { keysDown | w = value }
+
+        'A' ->
+            { keysDown | a = value }
+
+        'S' ->
+            { keysDown | s = value }
+
+        'D' ->
+            { keysDown | d = value }
+
+        _ ->
+            keysDown
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
@@ -167,27 +190,13 @@ update msg model =
                 NewPiece i ->
                     { model | tetris = (withNewPiece i model.tetris) }
 
+                Touch ( isStart, code ) ->
+                    { model | keysDown = setKeysFromCode model.keysDown isStart code }
+
                 KeyDownMsg code ->
                     let
-                        keysDown =
-                            model.keysDown
-
                         newKeysDown =
-                            case Char.fromCode code of
-                                'W' ->
-                                    { keysDown | w = True }
-
-                                'A' ->
-                                    { keysDown | a = True }
-
-                                'S' ->
-                                    { keysDown | s = True }
-
-                                'D' ->
-                                    { keysDown | d = True }
-
-                                _ ->
-                                    keysDown
+                            setKeysFromCode model.keysDown True code
 
                         newTetris =
                             if tetrisControlsActivated model then
@@ -234,21 +243,7 @@ update msg model =
                             model.keysDown
 
                         newKeysDown =
-                            case Char.fromCode code of
-                                'W' ->
-                                    { keysDown | w = False }
-
-                                'A' ->
-                                    { keysDown | a = False }
-
-                                'S' ->
-                                    { keysDown | s = False }
-
-                                'D' ->
-                                    { keysDown | d = False }
-
-                                _ ->
-                                    keysDown
+                            setKeysFromCode keysDown False code
                     in
                         { model | keysDown = newKeysDown }
 

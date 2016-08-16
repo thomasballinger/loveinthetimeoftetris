@@ -3,23 +3,115 @@
   <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
+<div id="ios-touch-to-start" hidden="true">
+  <div>
+    <br> <br> <br>
+    Touch to start<br>
+    (warning: sound)
+  </div>
+</div>
 <script type="text/javascript" src="Tone.js"></script>
 <script src="love.js" charset="UTF-8"> </script>
 <script src="tetrisSong.js"> </script>
 <script src="script.js"> </script>
+
+
+<!-- Translate touch events to keyboard events -->
 <script>
-var app = Elm.Main.fullscreen()
-app.ports.setBPM.subscribe(function(bpm) {
-  setBPM(bpm);
-});
+
+function initTouch(elmApp){
+  var rect = document.querySelector('.game');
+  function onDown(e){
+    // origin in center of div, at player
+    var x = e.clientX / rect.offsetWidth * 2 - 1;
+    var y = 1 - e.clientY / rect.offsetHeight * 2;
+    document.getElementById('log').innerHTML = '('+x+', '+y+')';
+    if (x > 0 && x > y){
+      elmApp.ports.touch.send([true, 68]);
+      document.getElementById('action').innerHTML = 'right'
+    } else if (x < 0 && Math.abs(x) > y){
+      elmApp.ports.touch.send([true, 65]);
+      document.getElementById('action').innerHTML = 'left'
+    } else if (x > 0 && 2*x > y){
+      elmApp.ports.touch.send([true, 68]);
+      elmApp.ports.touch.send([true, 87]);
+      document.getElementById('action').innerHTML = 'up right'
+    } else if (x < 0 && Math.abs(2*x) > y){
+      elmApp.ports.touch.send([true, 65]);
+      elmApp.ports.touch.send([true, 87]);
+      document.getElementById('action').innerHTML = 'up left'
+    } else {
+      elmApp.ports.touch.send([true, 87]);
+      document.getElementById('action').innerHTML = 'up'
+    }
+  }
+  function onUp(e){
+      elmApp.ports.touch.send([false, 65]);
+      elmApp.ports.touch.send([false, 68]);
+      elmApp.ports.touch.send([false, 87]);
+  }
+
+  rect.addEventListener('mousedown', onDown);
+  rect.addEventListener('touchstart', onDown);
+  rect.addEventListener('mouseup', onUp);
+  rect.addEventListener('touchend', onUp);
+  rect.addEventListener('touchcancel', onUp);
+}
+
+</script>
+<script>
+function runApp(){
+  var app = Elm.Main.fullscreen()
+  app.ports.setBPM.subscribe(function(bpm) {
+    setBPM(bpm);
+  });
+  return app
+}
+function go(){
+  document.getElementById('ios-touch-to-start').hidden = true;
+  playTetrisSong();
+  app = runApp();
+  setTimeout(function(){
+    initTouch(app);
+  }, 0); // timeout of 0 so Elm can build its view div
+}
 </script>
 
+<script>
+var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
+if (iOS){
+  var annoying = document.getElementById('ios-touch-to-start');
+  annoying.hidden = false;
+  function userInitiatedWebAudio(){
+    var osc = Tone.Transport.context.createOscillator()
+    osc.frequency.value = 1;
+    osc.connect(Tone.Transport.context.destination);
+    osc.start(0.01);
+    osc.stop(0.1);
+  }
+  annoying.addEventListener('touchend', function(){
+    userInitiatedWebAudio();
+    go();
+  });
+  annoying.addEventListener('mousedown', function(){
+    userInitiatedWebAudio();
+    go();
+  });
+} else {
+  go();
+}
+</script>
+
+<span id="log">hello</span>
+<span id="action">hello</span>
+<!-- prevent spacebar from scrolling down -->
 <script>
   document.documentElement.addEventListener('keydown', function (e) {
       if ( ( e.keycode || e.which ) == 32) {
           e.preventDefault();
       }
   }, false);
-<script>
+</script>
+
 </body>
 </html>
