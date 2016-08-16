@@ -7,3 +7,6 @@ Tone.js
 
 # compiled from Elm
 love.js
+
+# built from midi file
+tetrisSong.js
