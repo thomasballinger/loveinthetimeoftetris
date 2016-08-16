@@ -11,8 +11,13 @@
         return synth;
       },
       attack: function(synth, t, freq, vel){
+        vel = 0;
         synth.triggerAttack(freq, t, vel);
+      },
+      release: function(synth, t, freq){
+        synth.triggerRelease(t);
       }
+
     },
     'Tetris Harmony': {
       instrument: function(){
@@ -21,8 +26,13 @@
         return synth;
       },
       attack: function(synth, t, freq, vel){
+        vel = 0;
         synth.triggerAttack(freq, t, vel);
+      },
+      release: function(synth, t, freq){
+        synth.triggerRelease(t);
       }
+
     },
     'Tetris Bass': {
       instrument: function(){
@@ -32,7 +42,11 @@
       },
       attack: function(synth, t, freq, vel){
         synth.triggerAttack(freq, t, vel);
+      },
+      release: function(synth, t, freq){
+        synth.triggerRelease(t);
       }
+
     },
     'Tetris Perc': {
       instrument: function(){
@@ -44,6 +58,35 @@
       attack: function(synth, t, freq, vel){
         synth.triggerAttack(t);
       },
+      release: function(synth, t, freq){
+        synth.triggerRelease(t);
+      }
+    },
+    'Alt Bass': {
+      instrument: function(){
+        var synth = new Tone.PolySynth(4, Tone.Synth);
+        synth.toMaster();
+        return synth;
+      },
+      attack: function(synth, t, freq, vel){
+        synth.triggerAttack(freq, t, vel);
+      },
+      release: function(synth, t, freq){
+        synth.triggerRelease(freq, t);
+      }
+    },
+    'Alt Melody': {
+      instrument: function(){
+        var synth = new Tone.PolySynth(4, Tone.Synth);
+        synth.toMaster();
+        return synth;
+      },
+      attack: function(synth, t, freq, vel){
+        synth.triggerAttack(freq, t, vel);
+      },
+      release: function(synth, t, freq){
+        synth.triggerRelease(freq, t);
+      }
     }
   };
 
@@ -52,9 +95,9 @@
       attack(synth, t, freq, velocity);
     }, time);
   }
-  function scheduleRelease(synth, time){
+  function scheduleRelease(synth, release, freq, time){
     Tone.Transport.schedule(function(t){
-      synth.triggerRelease(t);
+      release(synth, t, freq);
     }, time);
   }
 
@@ -64,10 +107,11 @@
 
       var synth = spec[track.name].instrument();
       var attack = spec[track.name].attack;
+      var release = spec[track.name].release;
 
       for (var note of track.notes){
         scheduleAttack(synth, attack, note.note, note.time, note.velocity);
-        scheduleRelease(synth, note.time + note.duration);
+        scheduleRelease(synth, release, note.note, note.time + note.duration);
       }
     }
     Tone.Transport.bpm.value = 100;
