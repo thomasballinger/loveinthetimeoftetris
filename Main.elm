@@ -291,7 +291,19 @@ update msg model =
 
             newerModel =
                 { newModel
-                    | progress = min (newModel.progress + 0.0002) 1
+                    | progress =
+                        let
+                            desired =
+                                (newModel.progress + 0.0002)
+                        in
+                            if (desired > 0.99999999) then
+                                0.99999998
+                                -- Hack to prevent from gif
+                                -- from getting stuck in first frame
+                                -- this is probably a bug with whatever
+                                -- in Elm Graphics loads gifs
+                            else
+                                desired
                 }
         in
             if (model.player.squish /= 0.0) then

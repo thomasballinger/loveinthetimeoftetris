@@ -81,10 +81,14 @@ spriteDraw ( x, y, w, h ) spriteInfo entity =
                         "/stand"
 
                     ( Running, True ) ->
-                        if spriteInfo.hasRun then
-                            "/walk"
-                        else
-                            "/stand"
+                        let
+                            thing =
+                                if spriteInfo.hasRun then
+                                    "/walk"
+                                else
+                                    "/stand"
+                        in
+                            thing
             else
                 ""
 
@@ -106,7 +110,7 @@ spriteDraw ( x, y, w, h ) spriteInfo entity =
             "imgs/"
 
         src =
-            root ++ spriteInfo.spriteName ++ verb ++ dir ++ ".gif"
+            root ++ spriteInfo.spriteName ++ (Debug.log "verb" verb) ++ dir ++ ".gif"
 
         entityImage =
             image (round w) (round h) src

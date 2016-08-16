@@ -40,4 +40,4 @@ tetrisControlsActivated model =
 
 
 jumpSize model =
-    22
+    20 + (10 * model.progress)
