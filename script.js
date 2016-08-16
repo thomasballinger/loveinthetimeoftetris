@@ -54,9 +54,9 @@
   };
   /* silent - full - full - silent */
   tetrisPlayer.prototype.groupInfo = {
-    'tetris': [120, 200, 10000, 10000],
+    'tetris': [120, 230, 10000, 10000],
     'always': [0, 0, 10000, 10000],
-    'alt'   : [0, 0, 100, 160]
+    'alt'   : [0, 0, 140, 240]
   };
   tetrisPlayer.prototype.trackInfo = {
     'Tetris Melody': {

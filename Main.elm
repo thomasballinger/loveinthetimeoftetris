@@ -221,7 +221,7 @@ update msg model =
                                     max 0 (model.progress - 0.1)
 
                                 187 ->
-                                    min 2 (model.progress + 0.1)
+                                    min 1 (model.progress + 0.1)
 
                                 _ ->
                                     model.progress
@@ -291,7 +291,7 @@ update msg model =
 
             newerModel =
                 { newModel
-                    | progress = max (newModel.progress + 0.0005) 0.9
+                    | progress = min (newModel.progress + 0.0002) 1
                 }
         in
             if (model.player.squish /= 0.0) then
