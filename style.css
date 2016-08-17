@@ -16,8 +16,16 @@ div.space {
   background-color: #fff;
 }
 
+body {
+  margin: 0px;
+}
+
 body > div {
   text-align: center;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -ms-user-select: none;
 }
 
 div.game {
@@ -36,16 +44,15 @@ div.game {
 
 div.game > div {
   margin: auto !important;
-  border: solid gray 5px;
 }
 
 #ios-touch-to-start {
-  width: 600px;
-  height: 400px;
+  width: 200px;
+  height: 200px;
   margin: 0 auto;
   background-color: lightgrey;
 }
 #ios-touch-to-start {
-  font-size: 2em;
+  font-size: 1.6em;
   vertical-align: middle;
 }

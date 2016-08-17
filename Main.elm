@@ -24,6 +24,9 @@ port setBPM : Float -> Cmd msg
 port touch : (( Bool, Int ) -> msg) -> Sub msg
 
 
+port resize : (( Int, Int ) -> msg) -> Sub msg
+
+
 main =
     App.program
         { init = init
@@ -47,6 +50,7 @@ initialWorld =
     , progress = 0
     , lastTick = 0
     , keysDown = { w = False, a = False, s = False, d = False }
+    , windowSize = ( 600, 400 )
     }
 
 
@@ -57,17 +61,13 @@ subscriptions model =
         , Keyboard.ups KeyUpMsg
         , Time.every 16 Tick
         , touch Touch
+        , resize WinSize
         ]
 
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ div [ class "game" ] [ Element.toHtml (storyView 800 600 model) ]
-          --        , tetrisView model.tetris
-        , div [ class "spacer" ] []
-        , a [ href "https://github.com/thomasballinger/loveinthetimeoftetris" ] [ text "an Elm experiment" ]
-        ]
+    div [ class "game" ] [ Element.toHtml (storyView model.windowSize model) ]
 
 
 css path =
@@ -92,6 +92,7 @@ type Msg
     | Tick Time.Time
     | NewPiece Int
     | Touch ( Bool, Int )
+    | WinSize ( Int, Int )
 
 
 keypressedPlayer keysDown dt jump player =
@@ -187,6 +188,9 @@ update msg model =
     let
         newModel =
             case msg of
+                WinSize ( w, h ) ->
+                    { model | windowSize = ( w, h ) }
+
                 NewPiece i ->
                     { model | tetris = (withNewPiece i model.tetris) }
 
@@ -302,7 +306,7 @@ update msg model =
                 }
         in
             if (model.player.squish /= 0.0) then
-                init
+                ( { initialWorld | windowSize = model.windowSize }, setBPM 20 )
             else
                 ( { newerModel | tetris = newTetris }
                 , Cmd.batch

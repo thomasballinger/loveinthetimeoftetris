@@ -12,6 +12,7 @@ type alias Model =
     , progress : Float
     , lastTick : Time.Time
     , keysDown : KeysDown
+    , windowSize : ( Int, Int )
     }
 
 

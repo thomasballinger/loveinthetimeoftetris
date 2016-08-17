@@ -13,7 +13,7 @@ entities world =
     [ world.player ] ++ world.others
 
 
-storyView w h world =
+storyView ( w, h ) world =
     (collage w
         h
         ((List.map (draw ( Progression.sf world, world.player.x, world.player.y )) (displayBlocks world.tetris))
