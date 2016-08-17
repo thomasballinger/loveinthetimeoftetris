@@ -54,11 +54,13 @@ function initTouch(elmApp){
     var x = e.clientX / rect.offsetWidth * 2 - 1;
     var y = 1 - e.clientY / rect.offsetHeight * 2;
     sendCodes(x, y);
+    e.preventDefault();
   }
   function onTouchDown(e){
     var x = e.targetTouches[0].clientX / rect.offsetWidth * 2 - 1;
     var y = 1 - e.targetTouches[0].clientY / rect.offsetHeight * 2;
     sendCodes(x, y);
+    e.preventDefault();
   }
   function onUp(e){
       elmApp.ports.touch.send([false, 65]);

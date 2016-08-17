@@ -16,8 +16,9 @@ div.space {
   background-color: #fff;
 }
 
-body {
+html, body {
   margin: 0px;
+  position: fixed;
 }
 
 body > div {
