@@ -12,15 +12,17 @@
   }
 
   function tetrisPlayer(){
+    this.compressor = new Tone.Compressor();
     for (var trackName in this.trackInfo){
       if (this.trackInfo[trackName].group){
         var group = this.trackInfo[trackName].group;
         if (!this[group]){
           this[group] = new Tone.Volume();
-          this[group].toMaster();
+          this[group].connect(this.compressor);
         }
       }
     }
+    this.compressor.toMaster();
   }
 
   /* 290 is full tetris speed

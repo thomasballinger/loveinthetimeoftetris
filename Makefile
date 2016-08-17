@@ -9,7 +9,7 @@ test: *.elm tests/*.elm
 	cd tests; elm test Main.elm
 
 deploy: love.js dev script.js tetrisSong.js style.css
-	rsync -r index.html love.js Tone.js style.css script.js tetrisSong.js imgs tom:/home/tomb/elmgame
+	rsync -r index.html music.html love.js Tone.js style.css script.js tetrisSong.js imgs tom:/home/tomb/elmgame
 
 clean:
 	rm index.html

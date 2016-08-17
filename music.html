@@ -1,18 +1,57 @@
 <html>
   <head>
+    <style>
+      input[type='range'] {
+        height:60px;
+        width:300px;
+      }
+      body{
+        font-size: 3em;
+      }
+    </style>
   </head>
   <body>
     <script src="Tone.js"></script>
     <script src="tetrisSong.js"></script>
     <script src="script.js"></script>
+    <div id="ios-touch-to-start" hidden="true" onclick="go()">
+      <div>
+        Touch to start<br>
+        (warning: sound)
+      </div>
+    </div>
     <input id="tempoSlider"
         type="range"
         min="60"
         max="300"
         value="120"
         oninput="setBPM(tempoSlider.value); display.innerHTML = tempoSlider.value">
+    <br>
     <span id="display"></span>
-    <script>tempoSlider.oninput()</script>
+    <script>
+    function userInitiatedWebAudio(){
+      var osc = Tone.Transport.context.createOscillator()
+      osc.frequency.value = 1;
+      osc.connect(Tone.Transport.context.destination);
+      osc.start(0.01);
+      osc.stop(0.1);
+    }
+
+    function go(){
+      document.getElementById('ios-touch-to-start').hidden = true;
+      userInitiatedWebAudio();
+      playTetrisSong();
+      tempoSlider.oninput()
+    }
+
+    var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
+    if (iOS){
+      document.getElementById('ios-touch-to-start').hidden = false;
+    } else {
+      playTetrisSong();
+      tempoSlider.oninput()
+    }
+    </script>
     <!-- 290 is full tetris speed -->
   </body>
 </html>

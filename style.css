@@ -48,12 +48,9 @@ div.game > div {
 }
 
 #ios-touch-to-start {
-  width: 200px;
-  height: 200px;
-  margin: 0 auto;
+  width: 100%;
+  width: 100vw;
   background-color: lightgrey;
-}
-#ios-touch-to-start {
   font-size: 1.6em;
   vertical-align: middle;
 }
