@@ -36,9 +36,6 @@ drawSolid ( x, y, w, h ) color =
 
 
 
--- At position scale factor 1, entire width of tetris fits onscreen.
--- place player at 1/3 down the screen
--- once fully zoomed out, stop following player
 -- given a scale, center, and a width and height, draw the thing
 
 
