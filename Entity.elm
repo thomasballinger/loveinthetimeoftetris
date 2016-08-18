@@ -258,23 +258,26 @@ doCollisions walls entity =
 
         e3 =
             wallAlter e2 second
+
+        third =
+            wallCollision walls e2
     in
-        crushCheck e3 first second
+        crushCheck e3 first second third
 
 
-crushCheck : Collidable (Standable (Movable (Drawable b))) -> PossibleCollision -> PossibleCollision -> Collidable (Standable (Movable (Drawable b)))
-crushCheck e c1 c2 =
-    case ( c1, c2 ) of
-        ( NoCollision, NoCollision ) ->
+crushCheck : Collidable (Standable (Movable (Drawable b))) -> PossibleCollision -> PossibleCollision -> PossibleCollision -> Collidable (Standable (Movable (Drawable b)))
+crushCheck e c1 c2 c3 =
+    case ( c1, c2, c3 ) of
+        ( NoCollision, NoCollision, _ ) ->
             e
 
-        ( NoCollision, _ ) ->
+        ( NoCollision, _, _ ) ->
             e
 
-        ( _, NoCollision ) ->
+        ( _, NoCollision, _ ) ->
             e
 
-        ( Collision type1 _ _, Collision type2 _ _ ) ->
+        ( Collision type1 _ _, Collision type2 _ _, NoCollision ) ->
             if ((type1 == Floor && type2 == Ceiling) || (type1 == Ceiling && type2 == Floor)) then
                 { e | squish = 1.0 }
             else if ((type1 == LeftWall && type2 == RightWall) || (type1 == LeftWall && type2 == RightWall)) then
@@ -282,6 +285,21 @@ crushCheck e c1 c2 =
             else
                 e
 
+        ( Collision type1 _ _, Collision type2 _ _, Collision type3 _ _ ) ->
+            case type3 of
+                Floor ->
+                    { e | squish = 1.0 }
+
+                Ceiling ->
+                    { e | squish = 1.0 }
+
+                LeftWall ->
+                    { e | squish = -1.0 }
+
+                RightWall ->
+                    { e | squish = -1.0 }
 
 
+
+-- if a third collision happens after correcting for the first two then the player is stuck
 --- need squishing for when top and bottom both collide
