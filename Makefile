@@ -1,11 +1,11 @@
 all: love.js tetrisSong.js
 
-love.js: *.elm
+love.js: src/*.elm
 	elm make Main.elm --output=love.js
 
 dev: imgs
 
-test: *.elm tests/*.elm
+test: src/*.elm tests/*.elm
 	cd tests; elm test Main.elm
 
 deploy: love.js dev script.js tetrisSong.js style.css
