@@ -20,25 +20,31 @@ type alias KeysDown =
     { w : Bool, a : Bool, s : Bool, d : Bool }
 
 
+bpm : Model -> Float
 bpm model =
     80 + ((min model.progress 1) * 230)
 
 
+sf : Model -> Float
 sf model =
     5 - ((min model.progress 1) * 4.5)
 
 
+tetrisSpeed : Model -> Float
 tetrisSpeed model =
     0.02 + (model.progress * 0.2)
 
 
+tetrisTicks : Model -> Int
 tetrisTicks model =
     round (1 / (tetrisSpeed model))
 
 
+tetrisControlsActivated : Model -> Bool
 tetrisControlsActivated model =
     model.progress > 0.6
 
 
+jumpSize : Model -> Float
 jumpSize model =
     20 + (10 * model.progress)

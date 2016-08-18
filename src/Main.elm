@@ -41,6 +41,7 @@ init =
     ( initialWorld, setBPM 20 )
 
 
+initialWorld : Model
 initialWorld =
     { tetris = exampleTetrisState
     , player =
@@ -54,6 +55,10 @@ initialWorld =
     }
 
 
+type alias DownKeys =
+    { w : Bool, a : Bool, s : Bool, d : Bool }
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
@@ -65,25 +70,24 @@ subscriptions model =
         ]
 
 
-view : Model -> Html Msg
+view : Model -> Html msg
 view model =
     div [ class "game" ] [ Element.toHtml (storyView model.windowSize model) ]
 
 
+css : String -> Html msg
 css path =
     node "link" [ rel "stylesheet", href path ] []
 
 
+js : String -> Html msg
 js path =
     node "script" [ src path ] []
 
 
+tetrisView : TetrisState -> Html msg
 tetrisView tetris =
     div [ class "board" ] (divGrid (tetrisGrid tetris))
-
-
-
----if out of range, it's a wall
 
 
 type Msg
@@ -95,6 +99,7 @@ type Msg
     | WinSize ( Int, Int )
 
 
+keypressedPlayer : DownKeys -> Float -> Float -> Drawable (Movable a) -> Drawable (Movable a)
 keypressedPlayer keysDown dt jump player =
     let
         afterJump =
@@ -138,6 +143,7 @@ keypressedPlayer keysDown dt jump player =
         afterLR
 
 
+slowedPlayer : Float -> Drawable (Movable a) -> Drawable (Movable a)
 slowedPlayer dt player =
     if (player.onGround) then
         if (abs player.dx) < 0.2 then
@@ -165,6 +171,7 @@ blockUpdate ticksPerTetrisSquare dt tetris entity =
         doCollisions blocks entity
 
 
+setKeysFromCode : DownKeys -> Bool -> Int -> DownKeys
 setKeysFromCode keysDown value code =
     case Char.fromCode code of
         'W' ->
@@ -268,6 +275,7 @@ update msg model =
                                         |> blockUpdate (tetrisTicks model) 0.5 model.tetris
                                         |> keypressedPlayer model.keysDown 0.5 (jumpSize model)
                                         |> step 0.5
+                                        |> nopCompilerHack
                                 , others =
                                     List.map
                                         (\e ->
@@ -277,6 +285,7 @@ update msg model =
                                                 |> resetGround
                                                 |> blockUpdate (tetrisTicks model) 0.5 model.tetris
                                                 |> step 0.5
+                                                |> nopCompilerHack
                                         )
                                         model.others
                             }
@@ -319,6 +328,7 @@ update msg model =
                 )
 
 
+resetGround : Movable a -> Movable a
 resetGround e =
     { e | onGround = False }
 

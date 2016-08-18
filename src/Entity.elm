@@ -43,8 +43,8 @@ type alias SpriteInfo =
     }
 
 
-type alias Movable x =
-    { x | x : Float, y : Float, dx : Float, dy : Float, dir : Directional, onGround : Bool }
+type alias Movable a =
+    { a | x : Float, y : Float, dx : Float, dy : Float, dir : Directional, onGround : Bool }
 
 
 type alias Standable x =
@@ -60,6 +60,12 @@ gravity dt entity =
     { entity | dy = entity.dy - 1 * dt }
 
 
+
+-- Hack because of somethign I don't understand:
+-- https://gist.github.com/thomasballinger/a0d8b38fa7186ee2e608d4772f2ebe7e
+-- for now I'm annotating this a bunch more.
+
+
 step : Float -> Movable a -> Movable a
 step dt entity =
     { entity
@@ -68,11 +74,17 @@ step dt entity =
     }
 
 
+nopCompilerHack : { a | dir : Directional, dx : Float, dy : Float, x : Float, y : Float } -> { a | dir : Directional, dx : Float, dy : Float, x : Float, y : Float }
+nopCompilerHack x =
+    x
+
+
 collide : Collidable a -> Collidable b -> Bool
 collide e1 e2 =
     False
 
 
+initialPlayer : ( Float, Float ) -> Collidable (Standable (Movable (Drawable {})))
 initialPlayer ( x, y ) =
     { x = x
     , y = y
@@ -298,8 +310,3 @@ crushCheck e c1 c2 c3 =
 
                 RightWall ->
                     { e | squish = -1.0 }
-
-
-
--- if a third collision happens after correcting for the first two then the player is stuck
---- need squishing for when top and bottom both collide
