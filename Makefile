@@ -1,7 +1,7 @@
 all: love.js tetrisSong.js
 
 love.js: src/*.elm
-	elm make Main.elm --output=love.js
+	elm make src/Main.elm --output=love.js
 
 dev: imgs
 

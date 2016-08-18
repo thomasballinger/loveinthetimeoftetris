@@ -22,12 +22,12 @@ type alias TetrisState =
 
 exampleTetrisState : TetrisState
 exampleTetrisState =
-    (TetrisState initialBoard pieceJ1 ( 4, 2 ) ( 4, 1 ) 0 False)
+    (TetrisState initialBoard PieceJ1 ( 4, 2 ) ( 4, 1 ) 0 False)
 
 
 pieceGrid : Piece -> ( Int, Int ) -> Array.Array Int
 pieceGrid p ( dx, dy ) =
-    spotsOnGrid p.texture (movedSpots ( dx, dy ) p.spots)
+    spotsOnGrid 1 (movedSpots ( dx, dy ) (spots p))
 
 
 spotsOnGrid : Int -> List ( Int, Int ) -> Array.Array Int
@@ -37,7 +37,7 @@ spotsOnGrid v spots =
 
 pieceSpots : Piece -> ( Int, Int ) -> List ( Int, Int )
 pieceSpots p ( dx, dy ) =
-    List.map (pointAdd ( dx, dy )) p.spots
+    List.map (pointAdd ( dx, dy )) (spots p)
 
 
 tetrisGrid : TetrisState -> Array.Array Int
@@ -393,7 +393,7 @@ interpolatedActive tetris =
         ( dx, dy ) =
             pointPropAdd tetris.fraction tetris.curSpot tetris.nextSpot
     in
-        List.map (\( x, y ) -> ( (toFloat x) + dx, (toFloat y) + dy )) tetris.active.spots
+        List.map (\( x, y ) -> ( (toFloat x) + dx, (toFloat y) + dy )) (spots tetris.active)
 
 
 tetrisBlocksWithWalls ticksPerTetrisSquare dt tetris =

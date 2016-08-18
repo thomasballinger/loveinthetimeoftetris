@@ -341,9 +341,6 @@ playTetris ticksPerTetrisSquare dt tetris =
 withNewPiece : Int -> TetrisState -> TetrisState
 withNewPiece i tetris =
     let
-        thing =
-            Debug.log "calling withNewPiece"
-
         withPiece =
             { tetris | needsRandom = False, active = newPiece i }
 
