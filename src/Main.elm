@@ -298,21 +298,7 @@ update msg model =
                 playTetris (tetrisTicks model) 0.5 newModel.tetris
 
             newerModel =
-                { newModel
-                    | progress =
-                        let
-                            desired =
-                                (newModel.progress + 0.0002)
-                        in
-                            if (desired > 0.99999999) then
-                                0.99999998
-                                -- Hack to prevent from gif
-                                -- from getting stuck in first frame
-                                -- this is probably a bug with whatever
-                                -- in Elm Graphics loads gifs
-                            else
-                                desired
-                }
+                Progression.advance newModel
         in
             if (model.player.squish /= 0.0) then
                 ( { initialWorld | windowSize = model.windowSize }, setBPM 20 )

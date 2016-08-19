@@ -48,3 +48,22 @@ tetrisControlsActivated model =
 jumpSize : Model -> Float
 jumpSize model =
     20 + (10 * model.progress)
+
+
+advance : Model -> Model
+advance model =
+    let
+        desired =
+            (model.progress + 0.00025)
+
+        actual =
+            if (desired > 0.99999999) then
+                0.99999998
+                -- Hack to prevent from gif
+                -- from getting stuck in first frame
+                -- this is probably a bug with whatever
+                -- in Elm Graphics loads gifs
+            else
+                desired
+    in
+        { model | progress = actual }
