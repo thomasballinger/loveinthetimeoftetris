@@ -89,7 +89,7 @@ divRow row =
 rows : Array.Array Int -> List (List Int)
 rows grid =
     List.map (\i -> Array.toList (Array.slice (i * boardCols) ((i + 1) * boardCols) grid))
-        [0..boardRows]
+        [0..(boardRows - 1)]
 
 
 boardCols : Int

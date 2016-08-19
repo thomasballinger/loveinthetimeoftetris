@@ -214,7 +214,7 @@ doCollisions : List (Movable a) -> Drawable (Movable b) -> Drawable (Movable b)
 doCollisions walls entity =
     let
         first =
-            Debug.log "first collision:" (firstWallCollision walls entity)
+            firstWallCollision walls entity
 
         e2 =
             wallAlter entity first
@@ -252,19 +252,15 @@ crushCheck e c1 c2 c3 =
                 e
 
         ( Just col1, Just col2, Just col3 ) ->
-            let
-                thing =
-                    Debug.log "three collisions:" ( col1, col2, col3 )
-            in
-                case col3.collisionType of
-                    Floor ->
-                        { e | squish = 1.0 }
+            case col3.collisionType of
+                Floor ->
+                    { e | squish = 1.0 }
 
-                    Ceiling ->
-                        { e | squish = 1.0 }
+                Ceiling ->
+                    { e | squish = 1.0 }
 
-                    LeftWall ->
-                        { e | squish = -1.0 }
+                LeftWall ->
+                    { e | squish = -1.0 }
 
-                    RightWall ->
-                        { e | squish = -1.0 }
+                RightWall ->
+                    { e | squish = -1.0 }
