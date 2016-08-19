@@ -9,8 +9,8 @@ import Time
 import Progression exposing (Model, bpm, sf, tetrisControlsActivated, tetrisTicks, jumpSize)
 import StoryView exposing (storyView)
 import Entity exposing (..)
-import Others exposing (..)
-import Tetris exposing (divGrid, exampleTetrisState, TetrisState, tetrisGrid, tetrisLeft, tetrisRight, tetrisDown, tetrisRotateLeft, tetrisRotateRight, tetrisBlocksWithWalls, moveWorks, pointAdd)
+import Others exposing (princess)
+import Tetris exposing (TetrisState, tetrisBlocksWithWalls, pointAdd)
 import Piece exposing (newPiece)
 import TetrisAI exposing (desiredXAndRot)
 import Keyboard
@@ -43,7 +43,7 @@ init =
 
 initialWorld : Model
 initialWorld =
-    { tetris = exampleTetrisState
+    { tetris = Tetris.exampleState
     , player =
         initialPlayer ( 50, 100 )
         --    , others = [ princess ( 100, 100 ) ]
@@ -87,7 +87,7 @@ js path =
 
 tetrisView : TetrisState -> Html msg
 tetrisView tetris =
-    div [ class "board" ] (divGrid (tetrisGrid tetris))
+    div [ class "board" ] (Tetris.divGrid (Tetris.grid tetris))
 
 
 type Msg
@@ -162,7 +162,7 @@ slowedPlayer dt player =
             { player | dx = player.dx * μ ^ dt }
 
 
-blockUpdate : Int -> Float -> TetrisState -> Collidable (Movable (Drawable a)) -> Collidable (Movable (Drawable a))
+blockUpdate : Int -> Float -> TetrisState -> Movable (Drawable a) -> Movable (Drawable a)
 blockUpdate ticksPerTetrisSquare dt tetris entity =
     let
         blocks =
@@ -213,22 +213,22 @@ update msg model =
                             if tetrisControlsActivated model then
                                 case Char.fromCode code of
                                     'J' ->
-                                        tetrisLeft model.tetris
+                                        Tetris.tetrisLeft model.tetris
 
                                     'L' ->
-                                        tetrisRight model.tetris
+                                        Tetris.tetrisRight model.tetris
 
                                     'K' ->
-                                        tetrisDown model.tetris
+                                        Tetris.tetrisDown model.tetris
 
                                     'U' ->
-                                        tetrisRotateLeft model.tetris
+                                        Tetris.tetrisRotateLeft model.tetris
 
                                     'I' ->
-                                        tetrisRotateRight model.tetris
+                                        Tetris.tetrisRotateRight model.tetris
 
                                     'O' ->
-                                        tetrisRotateRight model.tetris
+                                        Tetris.tetrisRotateRight model.tetris
 
                                     _ ->
                                         model.tetris
@@ -328,7 +328,7 @@ update msg model =
                 )
 
 
-resetGround : Movable a -> Movable a
+resetGround : Drawable a -> Drawable a
 resetGround e =
     { e | onGround = False }
 
@@ -340,10 +340,10 @@ playTetris ticksPerTetrisSquare dt tetris =
             tetris.fraction + dt * (1 / (toFloat ticksPerTetrisSquare))
     in
         if newFraction > 1 then
-            if moveWorks ( 0, -2 ) tetris then
+            if Tetris.moveWorks ( 0, -2 ) tetris then
                 { tetris | fraction = 0, curSpot = tetris.nextSpot, nextSpot = pointAdd tetris.nextSpot ( 0, -1 ) }
             else
-                tetrisDown tetris
+                Tetris.tetrisDown tetris
         else
             { tetris | fraction = newFraction }
 

@@ -9,7 +9,7 @@ import Entity exposing (Drawable, Directional(..), EntityState(..), drawInfoColo
 import Progression
 
 
-entities : Progression.Model -> List (Entity.Collidable (Entity.Movable (Entity.Drawable {})))
+entities : Progression.Model -> List (Entity.Movable (Entity.Drawable {}))
 entities world =
     [ world.player ] ++ world.others
 

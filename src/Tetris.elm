@@ -1,11 +1,11 @@
-module Tetris exposing (divGrid, boardRows, boardCols, TetrisState, tetrisGrid, exampleTetrisState, tetrisRight, tetrisLeft, tetrisDown, displayBlocks, displayWalls, walls, tetrisBlocksWithWalls, moveWorks, pointAdd, onSpots, gridGet, smallestY, initialBoard, clearLines, tetrisRotateLeft, tetrisRotateRight)
+module Tetris exposing (divGrid, boardRows, boardCols, TetrisState, grid, exampleState, tetrisRight, tetrisLeft, tetrisDown, displayBlocks, displayWalls, walls, tetrisBlocksWithWalls, moveWorks, pointAdd, onSpots, gridGet, smallestY, initialBoard, clearLines, tetrisRotateLeft, tetrisRotateRight)
 
 import Html.Attributes exposing (class)
 import Html exposing (div)
 import Array
 import Set
 import Color exposing (Color, rgb)
-import Entity exposing (Collidable, Drawable, EntityState(..), Directional(..), drawInfoColor)
+import Entity exposing (Drawable, EntityState(..), Directional(..), drawInfoColor)
 import Piece exposing (..)
 
 
@@ -19,8 +19,8 @@ type alias TetrisState =
     }
 
 
-exampleTetrisState : TetrisState
-exampleTetrisState =
+exampleState : TetrisState
+exampleState =
     (TetrisState initialBoard PieceJ1 ( 4, 2 ) ( 4, 1 ) 0 False)
 
 
@@ -39,8 +39,8 @@ pieceSpots p ( dx, dy ) =
     List.map (pointAdd ( dx, dy )) (spots p)
 
 
-tetrisGrid : TetrisState -> Array.Array Int
-tetrisGrid tetris =
+grid : TetrisState -> Array.Array Int
+grid tetris =
     arrayAdd tetris.dead (pieceGrid tetris.active tetris.curSpot)
 
 
@@ -197,7 +197,7 @@ nextPiece : TetrisState -> TetrisState
 nextPiece tetris =
     let
         newGrid =
-            clearLines (tetrisGrid tetris)
+            clearLines (grid tetris)
     in
         { tetris | dead = newGrid, active = newPiece 1, curSpot = ( 4, 20 ), nextSpot = ( 4, 19 ), fraction = 0, needsRandom = True }
 
@@ -294,7 +294,7 @@ piecePix =
 -- tetris blocks: transform to play space
 
 
-walls : List (Collidable {})
+walls : List { x : Float, y : Float, w : Float, h : Float, dx : Float, dy : Float }
 walls =
     [ { x = (toFloat boardCols / 2) * piecePix - (piecePix / 2)
       , y = toFloat -3 * (piecePix / 2)
@@ -412,6 +412,6 @@ interpolatedActive tetris =
         List.map (\( x, y ) -> ( (toFloat x) + dx, (toFloat y) + dy )) (spots tetris.active)
 
 
-tetrisBlocksWithWalls : Int -> Float -> TetrisState -> List (Collidable {})
+tetrisBlocksWithWalls : Int -> Float -> TetrisState -> List { x : Float, y : Float, w : Float, h : Float, dx : Float, dy : Float }
 tetrisBlocksWithWalls ticksPerTetrisSquare dt tetris =
     (tetrisBlocks ticksPerTetrisSquare dt tetris) ++ walls

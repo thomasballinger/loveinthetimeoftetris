@@ -17,16 +17,6 @@
 <script src="tetrisSong.js"> </script>
 <script src="script.js"> </script>
 
-<!-- window resizing -->
-<script>
-function initResize(elmApp){
-  function onResize(){
-    elmApp.ports.resize.send([window.innerWidth, window.innerHeight]);
-  }
-  window.addEventListener('resize', onResize);
-  onResize();
-}
-</script>
 
 <!-- Characterize touch events based on screen region -->
 <script>
@@ -91,7 +81,6 @@ function go(){
   app = runApp();
   setTimeout(function(){
     initTouch(app);
-    initResize(app);
 
     document.getElementsByClassName('game')[0].addEventListener('selectstart', function(e) {
       e.preventDefault();

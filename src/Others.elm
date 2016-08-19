@@ -3,7 +3,7 @@ module Others exposing (..)
 import Entity exposing (..)
 
 
-princess : ( Float, Float ) -> Collidable (Movable (Drawable {}))
+princess : ( Float, Float ) -> Movable (Drawable {})
 princess ( x, y ) =
     { x = x
     , y = y

@@ -44,11 +44,7 @@ type alias SpriteInfo =
 
 
 type alias Movable a =
-    { a | x : Float, y : Float, dx : Float, dy : Float, dir : Directional, onGround : Bool }
-
-
-type alias Collidable x =
-    { x | w : Float, h : Float, x : Float, y : Float, dy : Float, dx : Float }
+    { a | x : Float, y : Float, dx : Float, dy : Float, w : Float, h : Float }
 
 
 gravity : Float -> Movable a -> Movable a
@@ -75,12 +71,12 @@ nopCompilerHack x =
     x
 
 
-collide : Collidable a -> Collidable b -> Bool
+collide : Movable a -> Movable b -> Bool
 collide e1 e2 =
     False
 
 
-initialPlayer : ( Float, Float ) -> Collidable (Movable (Drawable {}))
+initialPlayer : ( Float, Float ) -> Movable (Drawable {})
 initialPlayer ( x, y ) =
     { x = x
     , y = y
@@ -125,7 +121,7 @@ maybeCollision direction overlap velocity =
         Nothing
 
 
-smallestCollision : Collidable b -> Collidable a -> Maybe Collision
+smallestCollision : Movable b -> Movable a -> Maybe Collision
 smallestCollision e w =
     let
         left1 =
@@ -178,7 +174,7 @@ smallestCollision e w =
 -- Repeatedly find smallest collision, correct for it, then get next collision
 
 
-wallAlter : Collidable (Movable a) -> Maybe Collision -> Collidable (Movable a)
+wallAlter : Drawable (Movable a) -> Maybe Collision -> Drawable (Movable a)
 wallAlter entity collision =
     case collision of
         Nothing ->
@@ -199,7 +195,7 @@ wallAlter entity collision =
                     { entity | dx = vx, x = entity.x - col.overlap }
 
 
-firstWallCollision : List (Collidable a) -> Collidable b -> Maybe Collision
+firstWallCollision : List (Movable a) -> Movable b -> Maybe Collision
 firstWallCollision walls entity =
     case walls of
         [] ->
@@ -214,7 +210,7 @@ firstWallCollision walls entity =
                     Just collision
 
 
-doCollisions : List (Collidable a) -> Collidable (Movable (Drawable b)) -> Collidable (Movable (Drawable b))
+doCollisions : List (Movable a) -> Drawable (Movable b) -> Drawable (Movable b)
 doCollisions walls entity =
     let
         first =
@@ -235,7 +231,7 @@ doCollisions walls entity =
         crushCheck e3 first second third
 
 
-crushCheck : Collidable (Movable (Drawable b)) -> Maybe Collision -> Maybe Collision -> Maybe Collision -> Collidable (Movable (Drawable b))
+crushCheck : Movable (Drawable b) -> Maybe Collision -> Maybe Collision -> Maybe Collision -> Movable (Drawable b)
 crushCheck e c1 c2 c3 =
     case ( c1, c2, c3 ) of
         ( Nothing, Nothing, _ ) ->
