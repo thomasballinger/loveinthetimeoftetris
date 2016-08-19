@@ -30,7 +30,7 @@ evaluate : TetrisState -> Float
 evaluate tetris =
     let
         grid =
-            clearLines (tetrisGrid tetris)
+            clearLines (Tetris.grid tetris)
     in
         List.sum
             [ --Debug.log "num filled"
