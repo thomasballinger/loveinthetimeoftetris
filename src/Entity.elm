@@ -118,24 +118,19 @@ type CollisionType
     | RightWall
 
 
-type PossibleCollision
-    = NoCollision
-    | Collision CollisionType Float ( Float, Float )
+type alias Collision =
+    { collisionType : CollisionType, overlap : Float, velocity : ( Float, Float ) }
 
 
-
---- TODO: To choose which collision to report, find the dimension that overlaps most!
-
-
-collisionIf : CollisionType -> Float -> ( Float, Float ) -> PossibleCollision
-collisionIf direction overlap velocity =
+maybeCollision : CollisionType -> Float -> ( Float, Float ) -> Maybe Collision
+maybeCollision direction overlap velocity =
     if overlap > 0 then
-        Collision direction overlap velocity
+        Just (Collision direction overlap velocity)
     else
-        NoCollision
+        Nothing
 
 
-smallestCollision : Collidable (Standable b) -> Collidable a -> PossibleCollision
+smallestCollision : Collidable (Standable b) -> Collidable a -> Maybe Collision
 smallestCollision e w =
     let
         left1 =
@@ -162,18 +157,6 @@ smallestCollision e w =
         top2 =
             w.y + w.h / 2
 
-        bottomDist =
-            collisionIf Floor (top2 - bottom1) ( w.dx, w.dy )
-
-        topDist =
-            collisionIf Ceiling (top1 - bottom2) ( w.dx, w.dy )
-
-        leftDist =
-            collisionIf LeftWall (right2 - left1) ( w.dx, w.dy )
-
-        rightDist =
-            collisionIf RightWall (right1 - left2) ( w.dx, w.dy )
-
         touching =
             not
                 ((left2 >= right1)
@@ -182,38 +165,17 @@ smallestCollision e w =
                     || (bottom2 >= top1)
                 )
     in
-        if touching then
-            let
-                collisions =
-                    List.sortBy
-                        (\x ->
-                            case x of
-                                Collision _ amount _ ->
-                                    amount
-
-                                NoCollision ->
-                                    0
-                        )
-                        (List.filter
-                            (\x ->
-                                case x of
-                                    Collision _ amount _ ->
-                                        amount > 0
-
-                                    NoCollision ->
-                                        False
-                            )
-                            [ bottomDist, topDist, leftDist, rightDist ]
-                        )
-            in
-                case List.head collisions of
-                    Nothing ->
-                        NoCollision
-
-                    Just c ->
-                        c
+        if not touching then
+            Nothing
         else
-            NoCollision
+            (List.map3 maybeCollision
+                [ Floor, Ceiling, LeftWall, RightWall ]
+                [ (top2 - bottom1), (top1 - bottom2), (right2 - left1), (right1 - left2) ]
+                [ ( w.dx, w.dy ), ( w.dx, w.dy ), ( w.dx, w.dy ), ( w.dx, w.dy ) ]
+            )
+                |> List.filterMap (\x -> x)
+                |> List.sortBy .overlap
+                |> List.head
 
 
 
@@ -221,92 +183,97 @@ smallestCollision e w =
 -- Repeatedly find smallest collision, correct for it, then get next collision
 
 
-wallAlter : Collidable (Movable a) -> PossibleCollision -> Collidable (Movable a)
+wallAlter : Collidable (Movable a) -> Maybe Collision -> Collidable (Movable a)
 wallAlter entity collision =
     case collision of
-        --TODO this should be the dy of the thing collided with
-        Collision Floor n ( vx, vy ) ->
-            { entity | dy = (1 * vy) - 0.001, y = entity.y + n, onGround = True }
-
-        Collision Ceiling n ( vx, vy ) ->
-            { entity | dy = min 0 entity.dy, y = entity.y - n }
-
-        Collision LeftWall n ( vx, vy ) ->
-            { entity | dx = vx, x = entity.x + n }
-
-        Collision RightWall n ( vx, vy ) ->
-            { entity | dx = vx, x = entity.x - n }
-
-        _ ->
+        Nothing ->
             entity
 
+        Just col ->
+            case ( col.collisionType, col.velocity ) of
+                ( Floor, ( vx, vy ) ) ->
+                    { entity | dy = (1 * vy) - 0.001, y = entity.y + col.overlap, onGround = True }
 
-wallCollision : List (Collidable a) -> Collidable (Standable b) -> PossibleCollision
-wallCollision walls entity =
+                ( Ceiling, ( vx, vy ) ) ->
+                    { entity | dy = min 0 entity.dy, y = entity.y - col.overlap }
+
+                ( LeftWall, ( vx, vy ) ) ->
+                    { entity | dx = vx, x = entity.x + col.overlap }
+
+                ( RightWall, ( vx, vy ) ) ->
+                    { entity | dx = vx, x = entity.x - col.overlap }
+
+
+firstWallCollision : List (Collidable a) -> Collidable (Standable b) -> Maybe Collision
+firstWallCollision walls entity =
     case walls of
         [] ->
-            NoCollision
+            Nothing
 
         wall :: rest ->
             case smallestCollision entity wall of
-                NoCollision ->
-                    wallCollision rest entity
+                Nothing ->
+                    firstWallCollision rest entity
 
-                collision ->
-                    collision
+                Just collision ->
+                    Just collision
 
 
 doCollisions : List (Collidable a) -> Collidable (Standable (Movable (Drawable b))) -> Collidable (Standable (Movable (Drawable b)))
 doCollisions walls entity =
     let
         first =
-            wallCollision walls entity
+            Debug.log "first collision:" (firstWallCollision walls entity)
 
         e2 =
             wallAlter entity first
 
         second =
-            wallCollision walls e2
+            firstWallCollision walls e2
 
         e3 =
             wallAlter e2 second
 
         third =
-            wallCollision walls e2
+            firstWallCollision walls e3
     in
         crushCheck e3 first second third
 
 
-crushCheck : Collidable (Standable (Movable (Drawable b))) -> PossibleCollision -> PossibleCollision -> PossibleCollision -> Collidable (Standable (Movable (Drawable b)))
+crushCheck : Collidable (Standable (Movable (Drawable b))) -> Maybe Collision -> Maybe Collision -> Maybe Collision -> Collidable (Standable (Movable (Drawable b)))
 crushCheck e c1 c2 c3 =
     case ( c1, c2, c3 ) of
-        ( NoCollision, NoCollision, _ ) ->
+        ( Nothing, Nothing, _ ) ->
             e
 
-        ( NoCollision, _, _ ) ->
+        ( Nothing, _, _ ) ->
             e
 
-        ( _, NoCollision, _ ) ->
+        ( _, Nothing, _ ) ->
             e
 
-        ( Collision type1 _ _, Collision type2 _ _, NoCollision ) ->
-            if ((type1 == Floor && type2 == Ceiling) || (type1 == Ceiling && type2 == Floor)) then
+        ( Just col1, Just col2, Nothing ) ->
+            if ((col1.collisionType == Floor && col2.collisionType == Ceiling) || (col1.collisionType == Ceiling && col2.collisionType == Floor)) then
                 { e | squish = 1.0 }
-            else if ((type1 == LeftWall && type2 == RightWall) || (type1 == LeftWall && type2 == RightWall)) then
+            else if ((col1.collisionType == LeftWall && col2.collisionType == RightWall) || (col1.collisionType == LeftWall && col2.collisionType == RightWall)) then
                 { e | squish = -1.0 }
             else
                 e
 
-        ( Collision type1 _ _, Collision type2 _ _, Collision type3 _ _ ) ->
-            case type3 of
-                Floor ->
-                    { e | squish = 1.0 }
+        ( Just col1, Just col2, Just col3 ) ->
+            let
+                thing =
+                    Debug.log "three collisions:" ( col1, col2, col3 )
+            in
+                case col3.collisionType of
+                    Floor ->
+                        { e | squish = 1.0 }
 
-                Ceiling ->
-                    { e | squish = 1.0 }
+                    Ceiling ->
+                        { e | squish = 1.0 }
 
-                LeftWall ->
-                    { e | squish = -1.0 }
+                    LeftWall ->
+                        { e | squish = -1.0 }
 
-                RightWall ->
-                    { e | squish = -1.0 }
+                    RightWall ->
+                        { e | squish = -1.0 }
