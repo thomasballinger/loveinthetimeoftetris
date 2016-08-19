@@ -45,6 +45,11 @@ tetrisControlsActivated model =
     model.progress > 0.6
 
 
+zoomActivated : Model -> Bool
+zoomActivated model =
+    model.progress > 0.98
+
+
 jumpSize : Model -> Float
 jumpSize model =
     20 + (10 * model.progress)
@@ -58,11 +63,13 @@ advance model =
 
         actual =
             if (desired > 0.99999999) then
-                0.99999998
+                0.9997
                 -- Hack to prevent from gif
                 -- from getting stuck in first frame
                 -- this is probably a bug with whatever
                 -- in Elm Graphics loads gifs
+                -- unfortunately it causes flicker, not sure
+                -- which is worse.
             else
                 desired
     in

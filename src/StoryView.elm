@@ -20,10 +20,14 @@ storyView ( w, h ) world =
         ((List.map (draw ( Progression.sf world, world.player.x, world.player.y )) (displayBlocks world.tetris))
             ++ (List.map (draw ( Progression.sf world, world.player.x, world.player.y )) (entities world))
             ++ (List.map (draw ( Progression.sf world, world.player.x, world.player.y )) (displayWalls walls))
-            ++ (if Progression.tetrisControlsActivated world then
-                    [ Collage.text (Text.fromString "Tetris Controls: IJKL") |> move ( 0, ((toFloat h) / 2) - 10 ) ]
+            ++ (if Progression.zoomActivated world then
+                    [ Collage.text (Text.fromString "Zoom with + and -") |> move ( 0, ((toFloat h) / 2) - 10 ) ]
                 else
-                    [ Collage.text (Text.fromString "Controls: WASD") |> move ( 0, ((toFloat h) / 2) - 10 ) ]
+                    (if Progression.tetrisControlsActivated world then
+                        [ Collage.text (Text.fromString "Tetris Controls: IJKL") |> move ( 0, ((toFloat h) / 2) - 10 ) ]
+                     else
+                        [ Collage.text (Text.fromString "Controls: WASD") |> move ( 0, ((toFloat h) / 2) - 10 ) ]
+                    )
                )
         )
     )
