@@ -4,7 +4,6 @@ import Html.Attributes exposing (class)
 import Html exposing (div)
 import Array
 import Set
-import Util exposing (range)
 import Color exposing (Color, rgb)
 import Entity exposing (Collidable, Drawable, EntityState(..), Directional(..), drawInfoColor)
 import Piece exposing (..)
@@ -90,7 +89,7 @@ divRow row =
 rows : Array.Array Int -> List (List Int)
 rows grid =
     List.map (\i -> Array.toList (Array.slice (i * boardCols) ((i + 1) * boardCols) grid))
-        (range boardRows)
+        [0..boardRows]
 
 
 boardCols : Int
