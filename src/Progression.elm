@@ -1,14 +1,14 @@
 port module Progression exposing (..)
 
 import Tetris exposing (TetrisState)
-import Entity exposing (Movable, Standable, Collidable, Drawable)
+import Entity exposing (Movable, Collidable, Drawable)
 import Time
 
 
 type alias Model =
     { tetris : TetrisState
-    , player : Movable (Standable (Collidable (Drawable {})))
-    , others : List (Movable (Standable (Collidable (Drawable {}))))
+    , player : Movable (Collidable (Drawable {}))
+    , others : List (Movable (Collidable (Drawable {})))
     , progress : Float
     , lastTick : Time.Time
     , keysDown : KeysDown

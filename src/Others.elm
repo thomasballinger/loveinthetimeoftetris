@@ -3,7 +3,7 @@ module Others exposing (..)
 import Entity exposing (..)
 
 
-princess : ( Float, Float ) -> Collidable (Standable (Movable (Drawable {})))
+princess : ( Float, Float ) -> Collidable (Movable (Drawable {}))
 princess ( x, y ) =
     { x = x
     , y = y
@@ -20,7 +20,6 @@ princess ( x, y ) =
         }
     , dx = 0
     , dy = 0
-    , heightToCenter = 10
     , w = 30
     , h = 30
     , state = Standing

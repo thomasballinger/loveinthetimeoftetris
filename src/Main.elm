@@ -162,7 +162,7 @@ slowedPlayer dt player =
             { player | dx = player.dx * μ ^ dt }
 
 
-blockUpdate : Int -> Float -> TetrisState -> Collidable (Movable (Standable (Drawable a))) -> Collidable (Movable (Standable (Drawable a)))
+blockUpdate : Int -> Float -> TetrisState -> Collidable (Movable (Drawable a)) -> Collidable (Movable (Drawable a))
 blockUpdate ticksPerTetrisSquare dt tetris entity =
     let
         blocks =

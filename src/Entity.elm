@@ -47,10 +47,6 @@ type alias Movable a =
     { a | x : Float, y : Float, dx : Float, dy : Float, dir : Directional, onGround : Bool }
 
 
-type alias Standable x =
-    { x | heightToCenter : Float }
-
-
 type alias Collidable x =
     { x | w : Float, h : Float, x : Float, y : Float, dy : Float, dx : Float }
 
@@ -84,7 +80,7 @@ collide e1 e2 =
     False
 
 
-initialPlayer : ( Float, Float ) -> Collidable (Standable (Movable (Drawable {})))
+initialPlayer : ( Float, Float ) -> Collidable (Movable (Drawable {}))
 initialPlayer ( x, y ) =
     { x = x
     , y = y
@@ -101,7 +97,6 @@ initialPlayer ( x, y ) =
         }
     , dx = 0
     , dy = 0
-    , heightToCenter = 10
     , w = 15
     , h = 30
     , state = Standing
@@ -130,7 +125,7 @@ maybeCollision direction overlap velocity =
         Nothing
 
 
-smallestCollision : Collidable (Standable b) -> Collidable a -> Maybe Collision
+smallestCollision : Collidable b -> Collidable a -> Maybe Collision
 smallestCollision e w =
     let
         left1 =
@@ -204,7 +199,7 @@ wallAlter entity collision =
                     { entity | dx = vx, x = entity.x - col.overlap }
 
 
-firstWallCollision : List (Collidable a) -> Collidable (Standable b) -> Maybe Collision
+firstWallCollision : List (Collidable a) -> Collidable b -> Maybe Collision
 firstWallCollision walls entity =
     case walls of
         [] ->
@@ -219,7 +214,7 @@ firstWallCollision walls entity =
                     Just collision
 
 
-doCollisions : List (Collidable a) -> Collidable (Standable (Movable (Drawable b))) -> Collidable (Standable (Movable (Drawable b)))
+doCollisions : List (Collidable a) -> Collidable (Movable (Drawable b)) -> Collidable (Movable (Drawable b))
 doCollisions walls entity =
     let
         first =
@@ -240,7 +235,7 @@ doCollisions walls entity =
         crushCheck e3 first second third
 
 
-crushCheck : Collidable (Standable (Movable (Drawable b))) -> Maybe Collision -> Maybe Collision -> Maybe Collision -> Collidable (Standable (Movable (Drawable b)))
+crushCheck : Collidable (Movable (Drawable b)) -> Maybe Collision -> Maybe Collision -> Maybe Collision -> Collidable (Movable (Drawable b))
 crushCheck e c1 c2 c3 =
     case ( c1, c2, c3 ) of
         ( Nothing, Nothing, _ ) ->
