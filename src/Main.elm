@@ -72,7 +72,14 @@ subscriptions model =
 
 view : Model -> Html msg
 view model =
-    div [ class "game" ] [ Element.toHtml (storyView model.windowSize model) ]
+    let
+        ( w, h ) =
+            model.windowSize
+    in
+        div []
+            [ div [ class "game" ] [ Element.toHtml (storyView ( w // 2, h ) model) ]
+            , div [ class "game" ] [ Element.toHtml (storyView ( w // 2, h ) model) ]
+            ]
 
 
 css : String -> Html msg
