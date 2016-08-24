@@ -8,6 +8,7 @@ import Char
 import Time
 import Progression exposing (Model, bpm, sf, tetrisControlsActivated, tetrisTicks, jumpSize)
 import StoryView exposing (storyView)
+import StoryViewSVG exposing (storyViewSVG)
 import Entity exposing (..)
 import Others exposing (princess)
 import Tetris exposing (TetrisState, tetrisBlocksWithWalls, pointAdd)
@@ -78,7 +79,7 @@ view model =
     in
         div []
             [ div [ class "game" ] [ Element.toHtml (storyView ( w // 2, h ) model) ]
-            , div [ class "game" ] [ Element.toHtml (storyView ( w // 2, h ) model) ]
+            , div [ class "game" ] [ (storyViewSVG ( w // 2, h ) model) ]
             ]
 
 
