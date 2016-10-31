@@ -1,7 +1,7 @@
 
 
 
-[demo](love.ballingt.com)
+[demo](http://love.ballingt.com)
 
 ##Dev
 
